@@ -2,7 +2,7 @@
 #define SMATRIX_H
 
 #include <QImage>
-#include <sfunctors.h>
+#include <SLib/sfunctors.h>
 
 class SMatrix
 {

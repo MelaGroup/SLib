@@ -1,7 +1,7 @@
 #ifndef SFUNCTORS_H
 #define SFUNCTORS_H
 #include <QImage>
-#include <simagestatistics.h>
+#include <SLib/simagestatistics.h>
 
 
 class SFunctor

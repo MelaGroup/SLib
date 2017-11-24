@@ -1,7 +1,7 @@
 #ifndef SADJACENCYMATRIX_H
 #define SADJACENCYMATRIX_H
 
-#include <smatrix.h>
+#include <SLib/smatrix.h>
 #include <assert.h>
 
 

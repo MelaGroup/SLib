@@ -1,12 +1,12 @@
 #include "spie.h"
 
 
-SPie &SPie::scaleSlices(int min, int max)
+/*SPie &SPie::scaleSlices(int min, int max)
 {
     for(int t=0;t<thickness;++t)
-        at[t].scale(min,max);
+        (at[t]).scale(min,max);
     return *this;
-}
+}*/
 
 double SPie::distance(int x1, int y1, int x2, int y2) const
 {
@@ -25,7 +25,7 @@ SMatrix SPie::getDataTable() const
     int x,y;
     for(int r=0;r<DataTable.height();++r)
     {
-        x=r\width;y=r_height;
+        x=r/_width;y=r/_height;
         DataTable(0,r)=x;
         DataTable(1,r)=y;
         for(int c=2;c<DataTable.width();++c)

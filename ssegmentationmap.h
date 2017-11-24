@@ -3,7 +3,7 @@
 
 #include <random>
 #include <deque>
-#include <smatrix.h>
+#include <SLib/smatrix.h>
 #include <assert.h>
 
 

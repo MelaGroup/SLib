@@ -3,8 +3,8 @@
 #include <deque>
 #include <random>
 #include <vector>
-#include <smatrix.h>
-#include <ssegmentationmap.h>
+#include <SLib/smatrix.h>
+#include <SLib/ssegmentationmap.h>
 
 
 void Threshold(SMatrix& src,int threshold);

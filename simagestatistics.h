@@ -1,7 +1,7 @@
 #ifndef SIMAGESTATISICS_H
 #define SIMAGESTATISICS_H
 #include <QImage>
-#include <slinearalgebra.h>
+#include <SLib/slinearalgebra.h>
 
 
 class SCovarienceMatrix:public SMatrix_3x3
