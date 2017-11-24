@@ -23,6 +23,7 @@ public:
     bool isValidPos(int col,int row)const;
     SMatrix& scale(int min,int max);
     SMatrix copy(int x,int y,int w,int h) const;
+    SMatrix copy(QRect rect) const;
 
 
     int average()const;

@@ -69,17 +69,11 @@ SMatrix SMatrix::copy(int x, int y, int w, int h) const
             ret.ptr[ry][rx]=isValidPos(nx,ny)?ptr[ny][nx]:0;
         }
     return ret;
+}
 
-    /*if (isValidPos(x,y) && isValidPos(x+w-1,y+h-1))
-    {
-        SMatrix ret(w,h);
-        for(int ry=0;ry<h;++ry)
-            for(int rx=0;rx<w;++rx)
-                ret.ptr[ry][rx]=ptr[y+ry][x+rx];
-        return ret;
-    }
-    else qDebug()<<"SMatrix: Rect(x,y,w,z) does not fit";
-    return SMatrix(0,0);*/
+SMatrix SMatrix::copy(QRect rect) const
+{
+    return copy(rect.x(),rect.y(),rect.width(),rect.height());
 }
 
 

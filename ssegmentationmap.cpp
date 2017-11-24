@@ -1,6 +1,19 @@
 #include "ssegmentationmap.h"
 
-using pair=std::pair<int,SSegment>;
+
+void SSegment::operator+=(const SSegment &seg)
+{
+    int x1,y1,x2,y2;
+    x1=(x<seg.x)?x:seg.x;
+    y1=(y<seg.y)?y:seg.y;
+    x2=(x+w<seg.x+seg.w)?(seg.x+seg.w-1):(x+w-1);
+    y2=(y+h<seg.y+seg.h)?(seg.y+seg.h-1):(y+h-1);
+
+    x=x1,y=y1,w=x2-x1+1,h=y2-y1+1;
+    power+=seg.power;
+}
+
+
 SSegment SSegmentationMap::floodFill(int value, int x, int y)
 {
     if (!isValidPos(x,y)) throw std::invalid_argument("SSegmentationMap::floodFill - Invalid position");
@@ -40,62 +53,109 @@ SSegment SSegmentationMap::floodFill(int value, int x, int y)
 
 SSegment &SSegmentationMap::operator[](int id)
 {
-    if (!isExist(id)) throw std::invalid_argument("SSegmentation[] - id doesn't exist");
-    return map[id];
+    throwIfNotExist(id);
+    return segments[id];
 }
 
 bool SSegmentationMap::isExist(int id)
-{return map.find(id)!=map.end();}
+{return segments.find(id)!=segments.end();}
+
+bool SSegmentationMap::isValid()
+{return !(segments.empty());}
+
+void SSegmentationMap::throwIfNotExist(int id)
+{
+    if (!isExist(id))
+    {
+        qDebug()<<"SSegmentation - id="<<id<<" doesn't exist";
+        throw std::invalid_argument(nullptr);
+    }
+}
+
+void SSegmentationMap::throwIfNotFit(const SMatrix &src)
+{
+    if (src.width()!=_width || src.height()!=_height)
+    {
+        qDebug()<<"SSegmentationMap: map size!= src size";
+        throw std::invalid_argument(nullptr);
+    }
+}
 
 void SSegmentationMap::join(int id1, int id2)
 {
-    if (!isExist(id1) || !isExist(id2))
-    {
-        qDebug()<<"("<<id1<<";"<<id2<<")";
-        throw std::invalid_argument("SSegmentationMap::join -id1 or id2 doesn't exist");
-    }
-    map[id1]+=map[id2];
-    SSegment& seg = map[id2];
+    throwIfNotValid();
+    throwIfNotExist(id1);
+    throwIfNotExist(id2);
+
+    segments[id1]+=segments[id2];
+    SSegment& seg = segments[id2];
     for (int y=seg.y;y<(seg.y+seg.h);++y)
         for(int x=seg.x;x<(seg.x+seg.w);++x)
             if (ptr[y][x]==id2) ptr[y][x]=id1;
-    map.erase(id2);
+    segments.erase(id2);
 }
 
 int SSegmentationMap::joinToEnviroment(int id)
 {
+    throwIfNotValid();
+    throwIfNotExist(id);
 
-    if (!isExist(id)) throw std::invalid_argument("SSegmentationMap::joinToPrevious - id doesn't exist");
-
-    SSegment& seg = map[id];
-    std::map<int,int> counter_map;
+    SSegment& seg = segments[id];
+    std::map<int,int> counters;
     for (int y=seg.y-1;y<(seg.y+seg.h+2);++y)
         for(int x=seg.x-1;x<(seg.x+seg.w+2);++x)
-        {
-            //assert(ptr[y][x]==0 || ptr[y][x]==1);
+        {        
             if (isValidPos(x,y))
-                ++counter_map[ptr[y][x]];
+                ++counters[ptr[y][x]];
         }
+    counters.erase(id);
+    
+    int eid=(counters.begin()->first);
+    for(auto c: counters)
+        if (counters[eid]<c.second) eid=c.first;
 
-    counter_map.erase(id);
-    int enviroment_id=(counter_map.begin()->first);
-    for(auto it=counter_map.begin();it!=counter_map.end();++it)
-        if (counter_map[enviroment_id]<it->second) enviroment_id=it->first;
-
-    join(enviroment_id,id);
-    return enviroment_id;
+    join(eid,id);
+    return eid;
 }
 
-void SSegmentationMap::combineSmallWithLarge(int power_threshold)
+std::vector<int> SSegmentationMap::IDs()
 {
-    int min_id=map.begin()->first;
-    int max_id=map.rbegin()->first;
+    throwIfNotValid();
+
+    std::vector<int> id_vec;
+    id_vec.reserve(segments.size());
+    for (auto s:segments)
+        id_vec.push_back(s.first);
+    return id_vec;
+}
+
+SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id)
+{
+    throwIfNotValid();
+    throwIfNotFit(original);
+    throwIfNotExist(id);
+
+    SSegment& seg=segments[id];
+    SMatrix ret = original.copy(seg.x,seg.y,seg.w,seg.h);
+    for(int y=0;y<ret.height();++y)
+        for(int x=0;x<ret.width();++x)
+            if (ptr[seg.y+y][seg.x+x]!=id)
+                ret(x,y)=0;
+    return ret;
+}
+
+void SSegmentationMap::combine(int power_threshold)
+{
+    throwIfNotValid();
+
+    int min_id=segments.begin()->first;
+    int max_id=segments.rbegin()->first;
     for(int id=min_id;id<=max_id;++id)
-        if (isExist(id) && map[id].power<power_threshold)
+        if (isExist(id) && segments[id].power<power_threshold)
             joinToEnviroment(id);
 }
 
-void SSegmentationMap::postThreshold()
+void SSegmentationMap::buildPostThreshold()
 {
     int black_id=-1,white_id=2;
 
@@ -106,16 +166,25 @@ void SSegmentationMap::postThreshold()
             if (pix==0)
             {
                 auto Segment=floodFill(black_id,x,y);
-                map.insert(pair(black_id,Segment));
+                segments.insert({black_id,Segment});
                 --black_id;
             }
             if (pix==1)
             {
                 auto Segment=floodFill(white_id,x,y);
-                map.insert(pair(white_id,Segment));
+                segments.insert({white_id,Segment});
                 ++white_id;
             }
         }
+}
+
+void SSegmentationMap::throwIfNotValid()
+{
+    if (!isValid())
+    {
+        qDebug()<<"SSegmentation - map doesn't valid";
+        throw std::invalid_argument(nullptr);
+    }
 }
 
 
@@ -124,15 +193,16 @@ QImage SSegmentationMap::toImage() const
 {
     QImage img(_width,_height,QImage::Format_RGB888);
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist(0,255);
-    std::map<int,QColor> colors;
+    using namespace std;
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dist(0,255);
+    map<int,QColor> colors;
 
-    for (auto it=map.begin();it!=map.end();++it)
+    for (auto p: segments)
     {
         QColor rand_color(dist(gen),dist(gen),dist(gen));
-        colors.insert(std::pair<int,QColor>(it->first,rand_color));
+        colors.insert({p.first,rand_color});
     }
 
     for(int y=0;y<img.height();++y)
@@ -142,14 +212,3 @@ QImage SSegmentationMap::toImage() const
     return img;
 }
 
-void SSegment::operator+=(const SSegment &seg)
-{
-    int x1,y1,x2,y2;
-    x1=(x<seg.x)?x:seg.x;
-    y1=(y<seg.y)?y:seg.y;
-    x2=(x+w<seg.x+seg.w)?(seg.x+seg.w-1):(x+w-1);
-    y2=(y+h<seg.y+seg.h)?(seg.y+seg.h-1):(y+h-1);
-
-    x=x1,y=y1,w=x2-x1+1,h=y2-y1+1;
-    power+=seg.power;
-}

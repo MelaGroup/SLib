@@ -18,7 +18,7 @@ void Threshold(SSegmentationMap& src,int threshold)
             int &p=src(c,r);
             p=(p<threshold)?1:0; //ввести режимы mode
         }
-    src.postThreshold();
+    src.buildPostThreshold();
 }
 
 int OtsuThreshold(const SMatrix &src)
