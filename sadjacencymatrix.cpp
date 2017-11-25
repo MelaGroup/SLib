@@ -9,7 +9,7 @@ inline void SAdjacencyMatrix::calculate(const SMatrix &img)
             for(int i=-radius;i<=radius;++i)for(int j=-radius;j<=radius;++j)
             {
                 int xn=x+i,yn=y+j;
-                if (i!=0 && j!=0 && 0<xn && xn<img.width() && 0<yn && yn<img.height())
+                if (0<xn && xn<img.width() && 0<yn && yn<img.height()&& i!=0 && j!=0 )
                 {
                     int neighbor=img(xn,yn);
                     ++matrix[center][neighbor];
@@ -17,6 +17,15 @@ inline void SAdjacencyMatrix::calculate(const SMatrix &img)
             }
             //--matrix[center][center];//Заменить условия на более быстрые варианты
         }
+}
+
+void SAdjacencyMatrix::ignoreZero()
+{
+    for(int i=0;i<256;++i)
+    {
+        matrix[0][i]=0;
+        matrix[i][0]=0;
+    }
 }
 
 inline void SAdjacencyMatrix::elementsSum()
@@ -42,10 +51,11 @@ SAdjacencyMatrix::SAdjacencyMatrix(int radius)
             matrix[x][y]=0;
 }
 
-SAdjacencyMatrix::SAdjacencyMatrix(const SMatrix&img, int radius)
+SAdjacencyMatrix::SAdjacencyMatrix(const SMatrix&img, int radius, bool ignore_zero)
     :SAdjacencyMatrix(radius)
 {
     calculate(img);
+    if (ignore_zero) ignoreZero();
     elementsSum();
     checkMatrix();
 }
