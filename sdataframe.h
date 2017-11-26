@@ -28,6 +28,8 @@ public:
     template<typename It>
     void setHeader(const It& begin,const It& end);*/
 
+    SDataFrame& operator+=(const SDataFrame& other);
+
     void removeObject(int row);
     virtual bool toCSV(const QString& path);
 };

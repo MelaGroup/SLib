@@ -35,6 +35,29 @@ void SDataFrame::newObject(const std::string &name, const std::list<double> &val
     assert(table.size()==size_t(_rows));
 }
 
+SDataFrame &SDataFrame::operator+=(const SDataFrame &other)
+{
+    if (_rows==0 && header.empty() && names.empty())
+    {
+        *this=other;
+        return *this;
+    }
+    if(_rows!=other._rows)
+    {
+        qDebug()<<"SDataFrame: other.rows() and rows() must be equal)";
+        throw std::invalid_argument(nullptr);
+    }
+    size_t cols_start=cols();
+    for (int i=0;i<other.cols();++i)
+        header[cols_start+i]=other.header.at(i);
+
+    for (int i=0;i<_rows;++i)
+    {
+        std::copy_n(other.table[i].cbegin(),other.cols(),std::back_inserter(table[i]));
+    }
+    return *this;
+}
+
 void SDataFrame::removeObject(int row)
 {
     if (row<_rows)

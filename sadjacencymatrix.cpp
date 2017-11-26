@@ -128,6 +128,42 @@ double SAdjacencyMatrix::averageBrightness() const
     }
     return av;
 }
+
+void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
+{
+    calculate(img);
+    if (ignore_zero) ignoreZero();
+    elementsSum();
+    checkMatrix();
+}
+
+std::list<std::__cxx11::string> SAdjacencyMatrix::getHeader(const std::string& predicat)
+{
+    using namespace std;
+    list<string> header;
+    string str=predicat+to_string(radius);
+    header.push_back(str+"_Energy");
+    header.push_back(str+"_ENT");
+    header.push_back(str+"_LUN");
+    header.push_back(str+"_MPR");
+    header.push_back(str+"_CON");
+    header.push_back(str+"_TR");
+    header.push_back(str+"_AV");
+    return header;
+}
+
+std::list<double> SAdjacencyMatrix::getFeatures()
+{
+    std::list<double> features;
+    features.push_back(energy());
+    features.push_back(entropy());
+    features.push_back(localHomogenity());
+    features.push_back(maxProbability());
+    features.push_back(inertiaMoment());
+    features.push_back(trail());
+    features.push_back(averageBrightness());
+    return features;
+}
 /* работает странно
 double SAdjacencyMatrix::correlationBrightness(double av) const
 {

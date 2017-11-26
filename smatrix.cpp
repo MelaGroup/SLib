@@ -1,23 +1,47 @@
 #include "smatrix.h"
 
 
-SMatrix::SMatrix(int cols, int rows):_height(rows),_width(cols)
+void SMatrix::seize(int cols, int rows)
 {
+    _height=rows,_width=cols;
     ptr=new int*[rows];
     for(int i=0;i<rows;++i)
         ptr[i]=new int[cols];
 }
 
-SMatrix::SMatrix(const SMatrix &src):SMatrix(src._width,src._height)
+void SMatrix::release()
+{
+    for(int i=0;i<_height;++i)
+        delete [] ptr[i];
+    delete[] ptr;
+}
+
+void SMatrix::memcopy(const SMatrix &src)
 {
     for(int r=0;r<_height;++r)
         memcpy(ptr[r],src.ptr[r],sizeof(int)*_width);
 }
 
+void SMatrix::swap(SMatrix &src)
+{
+    std::swap(_height,src._height);
+    std::swap(_width,src._width);
+    std::swap(ptr,src.ptr);
+}
+
+SMatrix::SMatrix(int cols, int rows)
+{
+    seize(cols,rows);
+}
+
+SMatrix::SMatrix(const SMatrix &src):SMatrix(src._width,src._height)
+{
+    memcopy(src);
+}
+
 SMatrix::SMatrix(SMatrix &&src)
 {
-    _height=src._height;_width=src._width;
-    ptr=src.ptr; src.ptr=nullptr;
+    swap(src);
 }
 
 SMatrix::SMatrix(const QImage &src, const SFunctor &formula):SMatrix(src.width(),src.height())
@@ -25,6 +49,14 @@ SMatrix::SMatrix(const QImage &src, const SFunctor &formula):SMatrix(src.width()
     for(int r=0;r<_height;++r)
         for(int c=0;c<_width;++c)
             ptr[r][c]=formula(src.pixelColor(c,r));
+}
+
+SMatrix &SMatrix::operator=(const SMatrix &other)
+{
+    release();
+    seize(other._width,other._height);
+    memcopy(other);
+    return *this;
 }
 
 int& SMatrix::operator()(int col,int row){return ptr[row][col];}
@@ -104,7 +136,5 @@ QImage SMatrix::toImage() const
 
 SMatrix::~SMatrix()
 {
-    for(int i=0;i<_height;++i)
-        delete [] ptr[i];
-    delete[] ptr;
+    release();
 }

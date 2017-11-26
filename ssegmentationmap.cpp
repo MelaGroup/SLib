@@ -51,44 +51,22 @@ SSegment SSegmentationMap::floodFill(int value, int x, int y)
     return SSegment(x1,y1,x2-x1+1,y2-y1+1,power);
 }
 
+SSegmentationMap &SSegmentationMap::operator=(const SSegmentationMap &other)
+{
+    SMatrix::operator=(other);
+    segments=other.segments;
+    return *this;
+}
+
 SSegment &SSegmentationMap::operator[](int id)
 {
-    throwIfNotExist(id);
-    return segments[id];
-}
-
-bool SSegmentationMap::isExist(int id)
-{return segments.find(id)!=segments.end();}
-
-bool SSegmentationMap::isValid()
-{return !(segments.empty());}
-
-void SSegmentationMap::throwIfNotExist(int id)
-{
-    if (!isExist(id))
-    {
-        qDebug()<<"SSegmentation - id="<<id<<" doesn't exist";
-        throw std::invalid_argument(nullptr);
-    }
-}
-
-void SSegmentationMap::throwIfNotFit(const SMatrix &src)
-{
-    if (src.width()!=_width || src.height()!=_height)
-    {
-        qDebug()<<"SSegmentationMap: map size!= src size";
-        throw std::invalid_argument(nullptr);
-    }
+    return segments.at(id);
 }
 
 void SSegmentationMap::join(int id1, int id2)
 {
-    throwIfNotValid();
-    throwIfNotExist(id1);
-    throwIfNotExist(id2);
-
-    segments[id1]+=segments[id2];
-    SSegment& seg = segments[id2];
+    segments.at(id1)+=segments.at(id2);
+    SSegment& seg = segments.at(id2);
     for (int y=seg.y;y<(seg.y+seg.h);++y)
         for(int x=seg.x;x<(seg.x+seg.w);++x)
             if (ptr[y][x]==id2) ptr[y][x]=id1;
@@ -97,10 +75,7 @@ void SSegmentationMap::join(int id1, int id2)
 
 int SSegmentationMap::joinToEnviroment(int id)
 {
-    throwIfNotValid();
-    throwIfNotExist(id);
-
-    SSegment& seg = segments[id];
+    SSegment& seg = segments.at(id);
     std::map<int,int> counters;
     for (int y=seg.y-1;y<(seg.y+seg.h+2);++y)
         for(int x=seg.x-1;x<(seg.x+seg.w+2);++x)
@@ -118,10 +93,8 @@ int SSegmentationMap::joinToEnviroment(int id)
     return eid;
 }
 
-std::vector<int> SSegmentationMap::IDs()
+std::vector<int> SSegmentationMap::IDs() const
 {
-    throwIfNotValid();
-
     std::vector<int> id_vec;
     id_vec.reserve(segments.size());
     for (auto s:segments)
@@ -129,13 +102,9 @@ std::vector<int> SSegmentationMap::IDs()
     return id_vec;
 }
 
-SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id)
-{
-    throwIfNotValid();
-    throwIfNotFit(original);
-    throwIfNotExist(id);
-
-    SSegment& seg=segments[id];
+SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id) const
+{  
+    const SSegment& seg=segments.at(id);
     SMatrix ret = original.copy(seg.x,seg.y,seg.w,seg.h);
     for(int y=0;y<ret.height();++y)
         for(int x=0;x<ret.width();++x)
@@ -143,11 +112,17 @@ SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id)
                 ret(x,y)=0;
     return ret;
 }
+/*
+std::map<int, SMatrix> SSegmentationMap::getPack(const SMatrix &original)
+{
+    std::map<int,SMatrix> pack;
+    for(auto seg:segments)
+        pack.emplace(seg->first,getSegment(original,seg->first));
+    return pack;
+}*/
 
 void SSegmentationMap::combine(int power_threshold)
 {
-    throwIfNotValid();
-
     int min_id=segments.begin()->first;
     int max_id=segments.rbegin()->first;
     for(int id=min_id;id<=max_id;++id)
@@ -177,16 +152,6 @@ void SSegmentationMap::buildPostThreshold()
             }
         }
 }
-
-void SSegmentationMap::throwIfNotValid()
-{
-    if (!isValid())
-    {
-        qDebug()<<"SSegmentation - map doesn't valid";
-        throw std::invalid_argument(nullptr);
-    }
-}
-
 
 
 QImage SSegmentationMap::toImage() const

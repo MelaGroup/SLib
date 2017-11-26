@@ -9,13 +9,18 @@ class SMatrix
 protected:
     int _height,_width;
     int** ptr=nullptr;
+    inline void seize(int cols,int rows);
+    inline void release();
+    inline void memcopy(const SMatrix& src);
+
 public:
     SMatrix(int width,int height);
     SMatrix(const SMatrix& src);
     SMatrix(SMatrix&& src);
-
     SMatrix(const QImage & src,const SFunctor& formula=SFunctor());
+    SMatrix&operator=(const SMatrix& other);
 
+    inline void swap(SMatrix& src);
     int width() const {return _width;}
     int height() const {return _height;}
     int& operator()(int col,int row);
