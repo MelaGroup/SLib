@@ -12,10 +12,9 @@ class SAdjacencyMatrix:public SAbstractFeatures
 private:
     int matrix[256][256];
     int radius;
-    int elements_sum=0;
+    int elements=0;
     inline void calculate(const SMatrix &img);
     inline void ignoreZero(); //можно оптимизировать
-    inline void elementsSum();
     inline void checkMatrix();
 public:
     SAdjacencyMatrix(int radius=1);

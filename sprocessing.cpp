@@ -10,16 +10,6 @@ void Threshold(SMatrix &src,int threshold)
             p=(p<threshold)?1:0; //ввести режимы mode
         }
 }
-void Threshold(SSegmentationMap& src,int threshold)
-{
-    for(int r=0;r<src.height();++r)
-        for(int c=0;c<src.width();++c)
-        {
-            int &p=src(c,r);
-            p=(p<threshold)?1:0; //ввести режимы mode
-        }
-    src.buildPostThreshold();
-}
 
 int OtsuThreshold(const SMatrix &src)
 {
@@ -32,10 +22,7 @@ int OtsuThreshold(const SMatrix &src)
             if (-1<src(c,r) && src(c,r)<256)
                 ++(histogram[src(c,r)]);
             else
-            {
                 throw std::invalid_argument("OtsuThreshold: The matrix used is not scaled (0,255)");
-                exit(1);
-            }
 
     int n=0,m=0;
     for(int i=0;i<256;++i)
@@ -97,47 +84,3 @@ int floodFill(SMatrix &src, int value, int x, int y)
     return -1;
 }
 
-std::vector<int> postThresholdSegmentation(SMatrix &src)
-{
-    std::list<int> l{-1,-1};//первые два сегмента с id=0 и 1
-    int segment_id=2; //segment_id =0 и 1 зарезервированы
-
-    for(int y=0;y<src.height();++y)
-        for(int x=0;x<src.width();++x)
-        {
-            if (src(x,y)==1)
-            {
-                int area=floodFill(src,segment_id,x,y);
-                l.push_back(area);
-                ++segment_id;
-            }
-        }
-    return std::vector<int>{std::begin(l),std::end(l)};
-}
-
-
-SMatrix takeSegment(const SMatrix &src,const SMatrix& map,int segment_id)
-{
-    if (src.width()!=map.width() || src.height()!=map.height())
-        throw std::invalid_argument("takeSegment: map size!= src size");
-
-    int x1=map.width(),y1=map.height(),x2=0,y2=0;
-    for(int y=0;y<map.height();++y)
-        for(int x=0;x<map.width();++x)
-            if (map(x,y)==segment_id)
-            {
-                if (x<x1) x1=x;
-                if (y<y1) y1=y;
-                if (x2<x) x2=x;
-                if (y2<y) y2=y;
-            }
-    if (x2==0 && y2==0) throw std::invalid_argument("takeSegment - Segment with this id does not exist");
-
-    //единичная рамка
-    int rx=x1-1, ry=y1-1 , rw=x2-x1+3, rh=y2-y1+3;
-    SMatrix ret=src.copy(rx,ry,rw,rh);
-    for(int y=0;y<rh;++y)
-        for(int x=0;x<rw;++x)
-             if (!map.isValidPos(rx+x,ry+y) || map(rx+x,ry+y)!=segment_id) ret(x,y)=0;
-    return ret;
-}

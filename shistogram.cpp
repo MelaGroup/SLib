@@ -17,10 +17,10 @@ SHistogram::SHistogram(const SMatrix &src, bool ignore_zero)
 
 int SHistogram::MX()
 {
-    int av=0;
+    double av=0;
     for(int i=min_key;i<=max_key;++i)
-        av+=i*bars[i];
-    av/=sum;
+        av+=double(i*bars[i]);
+    av/=double(sum);
     return av;
 }
 
@@ -28,16 +28,17 @@ int SHistogram::DX(int av)
 {
     if (av==std::numeric_limits<int>::max())
         av=MX();
-    int dv=0;
+    double dv=0;
     for(int i=min_key;i<=max_key;++i)
-        dv+=bars[i]*(i-av)*(i-av);
-    dv/=sum;
+        dv+=double(bars[i]*(i-av)*(i-av));
+    dv/=double(sum);
     return dv;
 }
 
 void SHistogram::rebuild(const SMatrix &src, bool ignore_zero)
 {
     min_key=max_key=src(0,0);
+    bars.clear();
     for(int r=0;r<src.height();++r)
         for(int c=0;c<src.width();++c)
         {
@@ -45,7 +46,7 @@ void SHistogram::rebuild(const SMatrix &src, bool ignore_zero)
             if (key<min_key) min_key=key;
             if (max_key<key) max_key=key;
             ++bars[key];
-        }
+        }    
     sum=src.width()*src.height();
     if (ignore_zero) ignoreZero();
 }

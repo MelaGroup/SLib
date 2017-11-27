@@ -11,6 +11,8 @@ protected:
 public:
     SFunctor(){}
     SFunctor(double r,double g,double b):r(r),g(g),b(b){}
+    SFunctor(const std::initializer_list<double>& args);
+
     int operator()(const QColor& pixel) const
     {return int(r*double(pixel.red())+g*double(pixel.green())+b*double(pixel.blue()));}
 };

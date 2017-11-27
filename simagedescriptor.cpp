@@ -19,7 +19,7 @@ bool SImageDescriptor::isReady()
 
 bool SImageDescriptor::addComponent(const std::__cxx11::string &name, const SFunctor &component)
 {
-    if (components.find(name)!=components.end())
+    if (components.find(name)==components.end())
     {
         components[name]=component;
         return true;
@@ -37,39 +37,52 @@ bool SImageDescriptor::addSegmentationMap(const SSegmentationMap &seg_map)
     return false;
 }
 
-bool SImageDescriptor::addFeatures(const SAbstractFeatures &features)
+bool SImageDescriptor::addFeatures(SAbstractFeatures *features)
 {
-    if (typeid(features)!= typeid(const SAbstractFeatures&))
-    {
+    //if (typeid(features)!= typeid(SAbstractFeatures*))
+    //{
         all_features.push_back(features);
         return true;
-    }
-    return false;
+    //}
+   // return false;
 }
 
-SDataFrame SImageDescriptor::run()
+SDataFrame SImageDescriptor::run(const std::__cxx11::string &img_predicat)
 {
     using namespace std;
     SDataFrame X;
     if (isReady())
     {
+        qDebug()<<".start:"+QString::fromStdString(img_predicat);
         vector<int> ids=segments.IDs();
-        for (auto c:components)
+        for (const pair<string,SFunctor>& c:components)
         {
+            qDebug()<<".."+QString::fromStdString(c.first);
             SMatrix plane(src,c.second);
-            for (SAbstractFeatures f:all_features)
-            {
+            for (SAbstractFeatures* f:all_features)
+            {                
+                qDebug()<<"..."<<typeid(*f).name();
                 SDataFrame block;
-                block.setHeader(f.getHeader(c.first+"_"));
+                auto header=f->getHeader(c.first+"_");
+                block.setHeader(header);
                 for (int id:ids)
                 {
+                    qDebug()<<"...."<<id;
                     SMatrix segment = segments.getSegment(plane,id);
-                    f.rebuild(segment);
-                    block.newObject(to_string(id),f.getFeatures());
+                    f->rebuild(segment);
+                    block.newObject(img_predicat+to_string(id),f->getFeatures());
                 }
                 X+=block;
             }
         }
+        qDebug()<<".successful completion";
     }
     return X;
+}
+
+void SImageDescriptor::reset()
+{
+    components.clear();
+    for(auto f:all_features) delete f;
+    all_features.clear();
 }

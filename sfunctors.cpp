@@ -20,3 +20,9 @@ void SMainComponent::useComponent(int component_1_2or3)
     }
     else throw std::invalid_argument("SMaincomponent::use() - Use only 1,2 or 3");
 }
+
+SFunctor::SFunctor(const std::initializer_list<double> &args)
+{
+    auto i=args.begin();
+    r=*i++;g=*i++;b=*i++;
+}

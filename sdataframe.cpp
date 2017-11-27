@@ -25,14 +25,18 @@ void SDataFrame::setHeader(const std::list<std::string> &header_list)
         header[id()]=col_name;
 }
 
-
-void SDataFrame::newObject(const std::string &name, const std::list<double> &values)
+void SDataFrame::newObject(const std::string &name, const std::vector<double> &values)
 {
     if (header.size()!=values.size()) throw std::invalid_argument("SDataFrame: container.size() and headerSize() must be equal");
     names[_rows]=name;
     ++_rows;
-    table.emplace_back(std::vector<double>(values.begin(),values.end()));
+    table.emplace_back(values);
     assert(table.size()==size_t(_rows));
+}
+
+void SDataFrame::newObject(const std::string &name, const std::list<double> &values)
+{  
+    newObject(name,std::vector<double>(values.begin(),values.end()));
 }
 
 SDataFrame &SDataFrame::operator+=(const SDataFrame &other)
@@ -55,6 +59,23 @@ SDataFrame &SDataFrame::operator+=(const SDataFrame &other)
     {
         std::copy_n(other.table[i].cbegin(),other.cols(),std::back_inserter(table[i]));
     }
+    return *this;
+}
+
+SDataFrame &SDataFrame::vstack(const SDataFrame &other)
+{
+    if (_rows==0 && header.empty() && names.empty())
+    {
+        *this=other;
+        return *this;
+    }
+    if(cols()!=other.cols())
+    {
+        qDebug()<<"SDataFrame: other.cols() and cols() must be equal)";
+        throw std::invalid_argument(nullptr);
+    }
+    for (int i=0;i<other.rows();++i)
+        newObject(other.names.at(i),other.table[i]);
     return *this;
 }
 

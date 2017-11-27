@@ -22,18 +22,19 @@ public:
     int rows() const {return _rows;}
 
     void setHeader(const std::list<std::string>& header_list);
+    void newObject(const std::string &name, const std::vector<double> &values);
     void newObject(const std::string& name, const std::list<double> &values);
 
-    /*Шаблоны не компилируются, на другом компиляторе норм
-    template<typename It>
-    void setHeader(const It& begin,const It& end);*/
-
     SDataFrame& operator+=(const SDataFrame& other);
+    SDataFrame& vstack(const SDataFrame& other);
 
     void removeObject(int row);
     virtual bool toCSV(const QString& path);
 };
-/*
+
+/*Шаблоны не компилируются, на другом компиляторе норм
+    template<typename It>
+    void setHeader(const It& begin,const It& end);
 template <typename It>
 void SDataFrame::setHeader(const It& begin,const It& end)
 {

@@ -102,6 +102,18 @@ std::vector<int> SSegmentationMap::IDs() const
     return id_vec;
 }
 
+int SSegmentationMap::IDsmallest() const
+{
+    auto i=min_element(segments.begin(),segments.end(),segments.value_comp());
+    return i->first;
+}
+
+int SSegmentationMap::IDlargest() const
+{
+    auto i=max_element(segments.begin(),segments.end(),segments.value_comp());
+    return i->first;
+}
+
 SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id) const
 {  
     const SSegment& seg=segments.at(id);
@@ -112,14 +124,6 @@ SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id) const
                 ret(x,y)=0;
     return ret;
 }
-/*
-std::map<int, SMatrix> SSegmentationMap::getPack(const SMatrix &original)
-{
-    std::map<int,SMatrix> pack;
-    for(auto seg:segments)
-        pack.emplace(seg->first,getSegment(original,seg->first));
-    return pack;
-}*/
 
 void SSegmentationMap::combine(int power_threshold)
 {
@@ -130,28 +134,23 @@ void SSegmentationMap::combine(int power_threshold)
             joinToEnviroment(id);
 }
 
-void SSegmentationMap::buildPostThreshold()
+void SSegmentationMap::connectedAreas()
 {
-    int black_id=-1,white_id=2;
-
+    if (max()>=0)(*this)+=(-max()-1);//все оригинальные элементы теперь <0
+    int id=0;
     for(int y=0;y<_height;++y)
         for(int x=0;x<_width;++x)
         {
-            int pix=ptr[y][x];          
-            if (pix==0)
+            int pix = ptr[y][x];
+            if (pix<0)
             {
-                auto Segment=floodFill(black_id,x,y);
-                segments.insert({black_id,Segment});
-                --black_id;
-            }
-            if (pix==1)
-            {
-                auto Segment=floodFill(white_id,x,y);
-                segments.insert({white_id,Segment});
-                ++white_id;
+                auto seg=floodFill(id,x,y);
+                segments.insert({id,seg});
+                ++id;
             }
         }
 }
+
 
 
 QImage SSegmentationMap::toImage() const
