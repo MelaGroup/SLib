@@ -1,23 +1,68 @@
 #include "smatrix.h"
 
 
-SMatrix::SMatrix(int cols, int rows):_height(rows),_width(cols)
+void SMatrix::seize(int cols, int rows)
 {
+    _height=rows,_width=cols;
     ptr=new int*[rows];
     for(int i=0;i<rows;++i)
         ptr[i]=new int[cols];
 }
 
-SMatrix::SMatrix(const SMatrix &src):SMatrix(src._width,src._height)
+void SMatrix::release()
 {
+    for(int i=0;i<_height;++i)
+        delete [] ptr[i];
+    delete[] ptr;
+}
+
+void SMatrix::memcopy(const SMatrix &src)
+{   
     for(int r=0;r<_height;++r)
         memcpy(ptr[r],src.ptr[r],sizeof(int)*_width);
+    _max=src._max;
+    _min=src._min;
+}
+
+void SMatrix::refresh_limits()
+{
+    if (_max<_min)
+    {
+        _min=ptr[0][0];
+        _max=ptr[0][0];
+        for(int r=0;r<_height;++r)
+            for(int c=0;c<_width;++c)
+            {
+                int cell=ptr[r][c];
+                if (cell<_min) _min=cell;
+                if (_max<cell) _max=cell;
+            }
+    }
+}
+
+void SMatrix::swap(SMatrix &src)
+{
+    std::swap(_height,src._height);
+    std::swap(_width,src._width);
+    std::swap(ptr,src.ptr);
+    std::swap(_min,src._min);
+    std::swap(_max,src._max);
+}
+
+SMatrix::SMatrix(int cols, int rows)
+{
+    seize(cols,rows);
+}
+
+SMatrix::SMatrix(const SMatrix &src)
+{
+    seize(src._width,src._height);
+    memcopy(src);
 }
 
 SMatrix::SMatrix(SMatrix &&src)
 {
-    _height=src._height;_width=src._width;
-    ptr=src.ptr; src.ptr=nullptr;
+    swap(src);
 }
 
 SMatrix::SMatrix(const QImage &src, const SFunctor &formula):SMatrix(src.width(),src.height())
@@ -25,9 +70,45 @@ SMatrix::SMatrix(const QImage &src, const SFunctor &formula):SMatrix(src.width()
     for(int r=0;r<_height;++r)
         for(int c=0;c<_width;++c)
             ptr[r][c]=formula(src.pixelColor(c,r));
+    refresh_limits();
 }
 
-int& SMatrix::operator()(int col,int row){return ptr[row][col];}
+SMatrix &SMatrix::operator=(const SMatrix &other)
+{
+    release();
+    seize(other._width,other._height);
+    memcopy(other);
+    return *this;
+}
+
+SMatrix &SMatrix::operator+=(int value)
+{
+    _min+=value;_max+=value;
+    for(int y=0;y<_height;++y)
+        for(int x=0;x<_width;++x)
+        {
+            ptr[y][x]+=value;
+        }
+    return *this;
+}
+
+int SMatrix::min()
+{
+    refresh_limits();
+    return _min;
+}
+
+int SMatrix::max()
+{
+    refresh_limits();
+    return _max;
+}
+
+int& SMatrix::operator()(int col,int row)
+{
+    ruin_limits();
+    return ptr[row][col];
+}
 int SMatrix::operator()(int col,int row)const{return ptr[row][col];}
 
 bool SMatrix::isValidPos(int col, int row) const
@@ -37,23 +118,24 @@ bool SMatrix::isValidPos(int col, int row) const
 
 
 SMatrix& SMatrix::scale(int min,int max)
-{
-    int mat_min=ptr[0][0];
-    int mat_max=ptr[0][0];
-    for(int r=0;r<_height;++r)
-        for(int c=0;c<_width;++c)
-        {
-            int cell=ptr[r][c];
-            mat_min=(mat_min<cell)?mat_min:cell;
-            mat_max=(mat_max<cell)?cell:mat_max;
-        }
-    for(int r=0;r<_height;++r)
-        for(int c=0;c<_width;++c)
-        {
-            int cell=ptr[r][c];
-            cell=(max-min)*(cell-mat_min)/(mat_max-mat_min)+min;
-            ptr[r][c]=cell;
-        }
+{       
+    if (ptr!=nullptr)
+    {
+        refresh_limits();
+        if (_min==min && _max==max) return *this;
+
+        const int mat_min=_min,mat_max=_max;
+        auto scaler = [min,max,mat_min,mat_max](int x)
+            {return (max-min)*(x-mat_min)/(mat_max-mat_min)+min;};
+
+        for(int r=0;r<_height;++r)
+            for(int c=0;c<_width;++c)
+            {
+                int cell=ptr[r][c];
+                cell=scaler(cell);
+                ptr[r][c]=cell;
+            }
+    }
     return *this;
 }
 
@@ -76,27 +158,20 @@ SMatrix SMatrix::copy(QRect rect) const
     return copy(rect.x(),rect.y(),rect.width(),rect.height());
 }
 
-
-int SMatrix::average() const
-{
-    int sum=0;
-    for(int y=0;y<_height;++y)
-        for(int x=0;x<_width;++x)
-        {
-            sum+=ptr[y][x];
-        }
-    return sum/_width*_height;
-}
-
 QImage SMatrix::toImage() const
 {
     QImage diagram(_width,_height,QImage::Format_RGB888);
-    SMatrix copy_mat(*this);
-    copy_mat.scale(0,255);
+    const int mat_min=_min,mat_max=_max;
+    auto scaler = [mat_min,mat_max](int x)
+    {
+        if (mat_max==255 && mat_min==0) return x;
+        return 255*(x-mat_min)/(mat_max-mat_min);
+    };
+
     for(int y=0;y<_height;++y)
         for(int x=0;x<_width;++x)
         {
-            int cell=copy_mat.ptr[y][x];
+            int cell=scaler(ptr[y][x]);
             diagram.setPixel(x,y,qRgb(cell,cell,cell));
         }
     return diagram;
@@ -104,7 +179,5 @@ QImage SMatrix::toImage() const
 
 SMatrix::~SMatrix()
 {
-    for(int i=0;i<_height;++i)
-        delete [] ptr[i];
-    delete[] ptr;
+    release();
 }
