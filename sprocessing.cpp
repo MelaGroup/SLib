@@ -84,3 +84,20 @@ int floodFill(SMatrix &src, int value, int x, int y)
     return -1;
 }
 
+
+void binLaplace(SMatrix &src)
+{
+    SMatrix copy(src.width(),src.height());
+    for(int r=0;r<src.height();++r)
+        for(int c=0;c<src.width();++c)
+        {
+            copy(c,r)=0;
+            copy(c,r)-=4*src(c,r);
+            copy(c,r)+=src.at(c+1,r);
+            copy(c,r)+=src.at(c,r+1);
+            copy(c,r)+=src.at(c-1,r);
+            copy(c,r)+=src.at(c,r-1);
+            if(copy(c,r)!=0) copy(c,r)=20;
+        }
+    src.swap(copy);
+}
