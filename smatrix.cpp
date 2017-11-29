@@ -81,6 +81,31 @@ SMatrix &SMatrix::operator=(const SMatrix &other)
     return *this;
 }
 
+SMatrix &SMatrix::operator+=(const SMatrix &other)
+{
+    if(!isCompatible(other))
+        throw std::invalid_argument("SMatrix: sizes must be equal");
+    for(int r=0;r<_height;++r)
+        for(int c=0;c<_width;++c)
+            ptr[r][c]+=other.ptr[r][c];
+    return *this;
+}
+
+bool SMatrix::isValidPos(int col, int row) const
+{
+    return (-1<col && col<_width && -1<row && row<_height);
+}
+
+bool SMatrix::isCompatible(const SMatrix &src) const
+{
+    return src._width==_width && src.height()==_height;
+}
+
+bool SMatrix::isCompatible(const QImage &src) const
+{
+    return (src.width()==_width && src.height()==_height);
+}
+
 SMatrix &SMatrix::operator+=(int value)
 {
     _min+=value;_max+=value;
@@ -109,12 +134,33 @@ int& SMatrix::operator()(int col,int row)
     ruin_limits();
     return ptr[row][col];
 }
-int SMatrix::operator()(int col,int row)const{return ptr[row][col];}
 
-bool SMatrix::isValidPos(int col, int row) const
+int SMatrix::at(int col, int row, const int out_value) const
 {
-    return (-1<col && col<_width && -1<row && row<_height);
+    if (isValidPos(col,row))
+        return ptr[row][col];
+    return out_value;
 }
+
+void SMatrix::view(const QRect &rect) const
+{
+    int x1=rect.x(),y1=rect.y();
+    int x2=x1+rect.width()-1,y2=y1+rect.height()-1;
+    if (isValidPos(x1,y1) && isValidPos(x2,y2))
+    {
+        for(int j=y1;j<=y2;++j)
+        {
+            QString row="{";
+            for(int i=x1;i<=x2;++i)
+            {
+                row+=QString().number(ptr[j][i])+";";
+            }
+            row.chop(1);row+="}";
+            qDebug()<<row;
+        }
+    }
+}
+int SMatrix::operator()(int col,int row)const{return ptr[row][col];}
 
 
 SMatrix& SMatrix::scale(int min,int max)
@@ -126,7 +172,7 @@ SMatrix& SMatrix::scale(int min,int max)
 
         const int mat_min=_min,mat_max=_max;
         auto scaler = [min,max,mat_min,mat_max](int x)
-            {return (max-min)*(x-mat_min)/(mat_max-mat_min)+min;};
+        {return (max-min)*(x-mat_min)/(mat_max-mat_min)+min;};
 
         for(int r=0;r<_height;++r)
             for(int c=0;c<_width;++c)
@@ -142,6 +188,7 @@ SMatrix& SMatrix::scale(int min,int max)
 SMatrix SMatrix::copy(int x, int y, int w, int h) const
 {
     if (w<=0 || h<=0) throw std::invalid_argument("SMatrix::copy - bad width or height");
+    if (!isValidPos(x,y)) throw std::invalid_argument("SMatrix::copy - bad pos");
 
     SMatrix ret(w,h);
     for(int ry=0;ry<h;++ry)
@@ -153,14 +200,15 @@ SMatrix SMatrix::copy(int x, int y, int w, int h) const
     return ret;
 }
 
-SMatrix SMatrix::copy(QRect rect) const
+SMatrix SMatrix::copy(const QRect &rect) const
 {
     return copy(rect.x(),rect.y(),rect.width(),rect.height());
 }
 
-QImage SMatrix::toImage() const
+QImage SMatrix::toImage()
 {
     QImage diagram(_width,_height,QImage::Format_RGB888);
+    refresh_limits();
     const int mat_min=_min,mat_max=_max;
     auto scaler = [mat_min,mat_max](int x)
     {

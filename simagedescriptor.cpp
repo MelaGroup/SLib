@@ -7,7 +7,7 @@ bool SImageDescriptor::isReady()
     const bool valid_src  = !src.isNull();
     const bool valid_comp = !components.empty();
     const bool valid_map  = segments.isValid();
-    const bool valid_fit  = segments.isComatible(src);
+    const bool valid_fit  = segments.isCompatible(src);
     const bool valid_fs   = !all_features.empty();
     if (!valid_src ) qDebug()<<"SImageDescriptor: stop - invalid image";
     if (!valid_comp) qDebug()<<"SImageDescriptor: stop - no component ";
@@ -29,7 +29,7 @@ bool SImageDescriptor::addComponent(const std::__cxx11::string &name, const SFun
 
 bool SImageDescriptor::addSegmentationMap(const SSegmentationMap &seg_map)
 {
-    if (seg_map.isComatible(src) && seg_map.isValid())
+    if (seg_map.isCompatible(src) && seg_map.isValid())
     {
         segments=SSegmentationMap(seg_map);
         return true;
@@ -39,12 +39,12 @@ bool SImageDescriptor::addSegmentationMap(const SSegmentationMap &seg_map)
 
 bool SImageDescriptor::addFeatures(SAbstractFeatures *features)
 {
-    //if (typeid(features)!= typeid(SAbstractFeatures*))
-    //{
+    if (features!=nullptr)
+    {
         all_features.push_back(features);
         return true;
-    //}
-   // return false;
+    }
+    return false;
 }
 
 SDataFrame SImageDescriptor::run(const std::__cxx11::string &img_predicat)
@@ -53,7 +53,7 @@ SDataFrame SImageDescriptor::run(const std::__cxx11::string &img_predicat)
     SDataFrame X;
     if (isReady())
     {
-        qDebug()<<".start:"+QString::fromStdString(img_predicat);
+        qDebug()<<".block start:"+QString::fromStdString(img_predicat);
         vector<int> ids=segments.IDs();
         for (const pair<string,SFunctor>& c:components)
         {
@@ -69,14 +69,15 @@ SDataFrame SImageDescriptor::run(const std::__cxx11::string &img_predicat)
                 {
                     qDebug()<<"...."<<id;
                     SMatrix segment = segments.getSegment(plane,id);
-                    f->rebuild(segment);
+                    f->rebuild(segment,true);
                     block.newObject(img_predicat+to_string(id),f->getFeatures());
                 }
                 X+=block;
             }
         }
-        qDebug()<<".successful completion";
+        qDebug()<<".block end:"+QString::fromStdString(img_predicat);
     }
+    qDebug()<<"complite";
     return X;
 }
 

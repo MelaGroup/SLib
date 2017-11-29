@@ -171,9 +171,9 @@ SMatrix_3x3 SMatrix_3x3::eigenvectors(const SVector_3D &eigenValues) const
     SVector_3D S=ft.row(1)+ft.row(2)+ft.row(3);
     SVector_3D T=fs.row(1)+fs.row(2)+fs.row(3);
 
-    F/=F.x+F.y+F.z;
-    S/=S.x+S.y+S.z;
-    T/=T.x+T.y+T.z;
+    F/=fabs(F.x)+fabs(F.y)+fabs(F.z);
+    S/=fabs(S.x)+fabs(S.y)+fabs(S.z);
+    T/=fabs(T.x)+fabs(T.y)+fabs(T.z);
 
     return SMatrix_3x3(F,S,T);
 }

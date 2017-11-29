@@ -1,5 +1,9 @@
 #include "ssegmentationmap.h"
 
+bool SSegment::operator<(const SSegment &seg) const
+{
+    return power<seg.power;
+}
 
 void SSegment::operator+=(const SSegment &seg)
 {
@@ -12,6 +16,8 @@ void SSegment::operator+=(const SSegment &seg)
     x=x1,y=y1,w=x2-x1+1,h=y2-y1+1;
     power+=seg.power;
 }
+
+QRect SSegment::toRect(){return {x,y,w,h};}
 
 
 SSegment SSegmentationMap::floodFill(int value, int x, int y)
@@ -37,8 +43,7 @@ SSegment SSegmentationMap::floodFill(int value, int x, int y)
                 if (isValidPos(nx,ny)&& ptr[ny][nx]==orig)
                 {
                     ptr[ny][nx]=value;
-                            deque.push_back({nx,ny});
-
+                    deque.push_back({nx,ny});
                 }
             }
         deque.pop_front();
@@ -49,6 +54,19 @@ SSegment SSegmentationMap::floodFill(int value, int x, int y)
         if (y2<fy) y2=fy;
     }
     return SSegment(x1,y1,x2-x1+1,y2-y1+1,power);
+}
+
+std::default_random_engine &SSegmentationMap::global_urng() const
+{
+    static std::default_random_engine u{};
+    return u;
+}
+
+int SSegmentationMap::pick(int l, int r) const
+{
+    static std::uniform_int_distribution<> d{};
+    using parm_t = decltype(d)::param_type;
+    return d(global_urng(),parm_t{l,r});
 }
 
 SSegmentationMap &SSegmentationMap::operator=(const SSegmentationMap &other)
@@ -104,14 +122,19 @@ std::vector<int> SSegmentationMap::IDs() const
 
 int SSegmentationMap::IDsmallest() const
 {
-    auto i=min_element(segments.begin(),segments.end(),segments.value_comp());
-    return i->first;
+    int min_id=segments.begin()->first;
+    for (auto pair:segments)
+        if (pair.second < segments.at(min_id)) min_id=pair.first;
+    return min_id;
 }
 
 int SSegmentationMap::IDlargest() const
 {
-    auto i=max_element(segments.begin(),segments.end(),segments.value_comp());
-    return i->first;
+
+    int max_id=segments.begin()->first;
+    for (auto pair:segments)
+        if (segments.at(max_id)< pair.second) max_id=pair.first;
+    return max_id;
 }
 
 SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id) const
@@ -136,6 +159,7 @@ void SSegmentationMap::combine(int power_threshold)
 
 void SSegmentationMap::connectedAreas()
 {
+    segments.clear();
     if (max()>=0)(*this)+=(-max()-1);//все оригинальные элементы теперь <0
     int id=0;
     for(int y=0;y<_height;++y)
@@ -151,6 +175,26 @@ void SSegmentationMap::connectedAreas()
         }
 }
 
+bool SSegmentationMap::isExist(int id) const
+{
+    return segments.find(id)!=segments.end();
+}
+
+bool SSegmentationMap::isValid() const
+{
+    return !(segments.empty());
+}
+
+bool SSegmentationMap::isCompatible(const SMatrix &src) const
+{
+    return SMatrix::isCompatible(src);
+}
+
+bool SSegmentationMap::isCompatible(const QImage &src) const
+{
+    return SMatrix::isCompatible(src);
+}
+
 
 
 QImage SSegmentationMap::toImage() const
@@ -158,21 +202,22 @@ QImage SSegmentationMap::toImage() const
     QImage img(_width,_height,QImage::Format_RGB888);
 
     using namespace std;
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dist(0,255);
     map<int,QColor> colors;
 
-    for (auto p: segments)
-    {
-        QColor rand_color(dist(gen),dist(gen),dist(gen));
-        colors.insert({p.first,rand_color});
-    }
-
-    for(int y=0;y<img.height();++y)
-        for(int x=0;x<img.width();++x)
-            img.setPixelColor(x,y,colors[ptr[y][x]]);
+    for(int y=0;y<_height;++y)
+        for(int x=0;x<_width;++x)
+        {
+            int pix=ptr[y][x];
+            if (colors.find(pix)==colors.end())
+                colors[pix]=QColor(pick(0,255),pick(0,255),pick(0,255));
+            img.setPixelColor(x,y,colors.at(pix));
+        }
 
     return img;
+}
+
+SMatrix SSegmentationMap::toMatrix() const
+{
+    return SMatrix(*this);
 }
 

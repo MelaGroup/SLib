@@ -12,22 +12,22 @@ public:
     SFunctor(){}
     SFunctor(double r,double g,double b):r(r),g(g),b(b){}
     SFunctor(const std::initializer_list<double>& args);
-
-    int operator()(const QColor& pixel) const
-    {return int(r*double(pixel.red())+g*double(pixel.green())+b*double(pixel.blue()));}
+    SFunctor(const SVector_3D& vec):r(vec.x),g(vec.y),b(vec.z){}
+    SFunctor& operator=(const SFunctor& other);
+    int operator()(const QColor& pixel) const;
 };
 
-class SMainComponent:public SFunctor
+class SMainComponents
 {
     SVector_3D eigenvalues;
     SMatrix_3x3 eigenvectors;
-    int component_number=1;
 public:
-    SMainComponent(const QImage& src);
-    void useComponent(int component_1_2or3);
-    int operator()(const QColor& pixel) const
-    {return int(r*double(pixel.red())+g*double(pixel.green())+b*double(pixel.blue()));}
+    SMainComponents(const QImage& src);
+    SFunctor first() const {return eigenvectors.col(1);}
+    SFunctor second() const {return eigenvectors.col(2);}
+    SFunctor third() const {return eigenvectors.col(3);}
 };
+
 
 
 
