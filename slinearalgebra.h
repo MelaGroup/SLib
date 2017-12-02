@@ -9,20 +9,15 @@ struct SVector_3D
 {
     double x,y,z;
 
-    SVector_3D(double x=0,double y=0,double z=0):x(x),y(y),z(z){}
+    SVector_3D(double x=0,double y=0,double z=0);
     SVector_3D(const init& xyz);
-    SVector_3D operator+(const SVector_3D& other)const
-        {return SVector_3D(x+other.x,y+other.y,z+other.z);}
-    SVector_3D operator-(const SVector_3D& other)const
-        {return SVector_3D(x-other.x,y-other.y,z-other.z);}
-    double operator*(const SVector_3D& other)const
-        {return x*other.x+y*other.y+z*other.z;}
+    SVector_3D operator+(const SVector_3D& other)const;
+    SVector_3D operator-(const SVector_3D& other)const;
+    double operator*(const SVector_3D& other)const;
     SVector_3D& operator/=(double norma);
-    double max() const;
-    //int posMax() const;
     SVector_3D& sort();
     double operator[](int num);
-
+    bool operator==(const SVector_3D& other);
     void print() const;
 };
 
@@ -42,9 +37,12 @@ public:
     SMatrix_3x3 operator-(const SMatrix_3x3& other)const;
     SMatrix_3x3 operator*(const SMatrix_3x3& m) const;
 
+    bool operator==(const SMatrix_3x3& other) const;
+
     double& a(int x,int y);
     SVector_3D eigenvalues() const;
     SMatrix_3x3 eigenvectors(const SVector_3D& eigenValues) const;
+    void print();
 };
 
 #endif // SLINEARALGEBRA_H

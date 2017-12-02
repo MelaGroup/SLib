@@ -1,24 +1,26 @@
 #include "slinearalgebra.h"
 
+SVector_3D::SVector_3D(double x, double y, double z):x(x),y(y),z(z){}
+
 SVector_3D::SVector_3D(const init &xyz)
 {
     auto i=xyz.begin();
-    x=*i;++i;
-    y=*i;++i;
-    z=*i;++i;
+    x=*i++; y=*i++; z=*i++;
 }
+
+SVector_3D SVector_3D::operator+(const SVector_3D &other) const
+{return SVector_3D(x+other.x,y+other.y,z+other.z);}
+
+SVector_3D SVector_3D::operator-(const SVector_3D &other) const
+{return SVector_3D(x-other.x,y-other.y,z-other.z);}
+
+double SVector_3D::operator*(const SVector_3D &other) const
+{return x*other.x+y*other.y+z*other.z;}
 
 SVector_3D &SVector_3D::operator/=(double norma)
 {
     x/=norma;y/=norma;z/=norma;
     return *this;
-}
-
-double SVector_3D::max() const
-{
-    double max=(x<y)?y:x;
-    max=(max<z)?z:max;
-    return max;
 }
 
 SVector_3D& SVector_3D::sort()
@@ -53,12 +55,11 @@ double SVector_3D::operator[](int num)
     }
 }
 
-/*int SVector_3D::posMax() const
+bool SVector_3D::operator==(const SVector_3D &other)
 {
-    if (y<x && z<x) return 1;
-    if (x<y && z<y) return 2;
-    return 3;
-}*/
+    return fabs(x-other.x)+fabs(y-other.y)+fabs(z-other.z)<1E-7;
+}
+
 
 void SVector_3D::print() const
 {
@@ -133,6 +134,27 @@ SMatrix_3x3 SMatrix_3x3::operator*(const SMatrix_3x3& m)const
     return dst;
 }
 
+bool SMatrix_3x3::operator==(const SMatrix_3x3 &other) const
+{
+    double a00,a10,a20;
+    double a01,a11,a21;
+    double a02,a12,a22;
+
+    a00=fabs(mat[0][0]-other.mat[0][0]);
+    a10=fabs(mat[1][0]-other.mat[1][0]);
+    a20=fabs(mat[2][0]-other.mat[2][0]);
+
+    a01=fabs(mat[0][1]-other.mat[0][1]);
+    a11=fabs(mat[1][1]-other.mat[1][1]);
+    a21=fabs(mat[2][1]-other.mat[2][1]);
+
+    a02=fabs(mat[0][2]-other.mat[0][2]);
+    a12=fabs(mat[1][2]-other.mat[1][2]);
+    a22=fabs(mat[2][2]-other.mat[2][2]);
+
+    return (a00+a10+a20+a01+a11+a21+a02+a12+a22)<1E-7;
+}
+
 double &SMatrix_3x3::a(int x, int y)
 {
     if (!isExist(x,y))
@@ -176,6 +198,13 @@ SMatrix_3x3 SMatrix_3x3::eigenvectors(const SVector_3D &eigenValues) const
     T/=fabs(T.x)+fabs(T.y)+fabs(T.z);
 
     return SMatrix_3x3(F,S,T);
+}
+
+void SMatrix_3x3::print()
+{
+    qDebug()<<"{"<<mat[0][0]<<"|"<<mat[0][1]<<"|"<<mat[0][2]<<"}";
+    qDebug()<<"{"<<mat[1][0]<<"|"<<mat[1][1]<<"|"<<mat[1][2]<<"}";
+    qDebug()<<"{"<<mat[2][0]<<"|"<<mat[2][1]<<"|"<<mat[2][2]<<"}";
 }
 
 /*SVector_3D SMatrix_3x3::eigenvector(double eigenvalue) const

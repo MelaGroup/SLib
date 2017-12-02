@@ -2,6 +2,7 @@
 #define SMATRIX_H
 
 #include <QImage>
+#include <QDebug>
 #include <SLib/sfunctors.h>
 
 
@@ -24,7 +25,7 @@ public:
     SMatrix(int width,int height);
     SMatrix(const SMatrix& src);
     SMatrix(SMatrix&& src);
-    SMatrix(const QImage & src,const SFunctor& formula=SFunctor());    
+    SMatrix(const QImage & src,const SFunctor& formula=SFunctor());
     SMatrix copy(int x,int y,int w,int h) const;
     SMatrix copy(const QRect& rect) const;
     SMatrix& scale(int min,int max);
@@ -36,6 +37,8 @@ public:
     bool isValidPos(int col,int row)const;
     bool isCompatible(const SMatrix & src) const;
     bool isCompatible(const QImage& src) const;
+    bool operator==(const SMatrix& other) const;
+
     int min();
     int max();
     int width() const {return _width;}
@@ -48,6 +51,8 @@ public:
     virtual QImage toImage();
     ~SMatrix();
 };
+
+QImage constructImage(const SMatrix &r, const SMatrix &g, const SMatrix &b);
 
 
 #endif // SMATRIX_H

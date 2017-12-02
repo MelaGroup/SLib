@@ -106,6 +106,14 @@ bool SMatrix::isCompatible(const QImage &src) const
     return (src.width()==_width && src.height()==_height);
 }
 
+bool SMatrix::operator==(const SMatrix &other) const
+{
+    for (int r=0;r<_height;++r)
+        for(int c=0;c<_width;++c)
+            if (ptr[r][c]!=other.ptr[r][c]) return false;
+    return true;
+}
+
 SMatrix &SMatrix::operator+=(int value)
 {
     _min+=value;_max+=value;
@@ -223,6 +231,19 @@ QImage SMatrix::toImage()
             diagram.setPixel(x,y,qRgb(cell,cell,cell));
         }
     return diagram;
+}
+QImage constructImage(const SMatrix &r, const SMatrix &g, const SMatrix &b)
+{
+    QImage img;
+    if (r.isCompatible(g) && r.isCompatible(b))
+    {
+        img=QImage(r.width(),r.height(),QImage::Format_RGB888);
+        for(int y=0;y<img.height();++y)
+            for(int x=0;x<img.width();++x)
+                img.setPixel(x,y,qRgb(r(x,y),g(x,y),b(x,y)));
+    }
+    else throw std::invalid_argument("collectImage: r,g, and b must be compatible");
+    return img;
 }
 
 SMatrix::~SMatrix()

@@ -30,6 +30,7 @@ protected:
 
 public:
     SSegmentationMap(const SMatrix& src):SMatrix(src){connectedAreas();}
+    SSegmentationMap(SMatrix&& src):SMatrix(src){connectedAreas();}
     SSegmentationMap(const SSegmentationMap& src):SMatrix(src),segments(src.segments){}
     SSegmentationMap(int width=0,int height=0):SMatrix(width,height){}
     SSegmentationMap &operator=(const SSegmentationMap &other);

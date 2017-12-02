@@ -3,21 +3,28 @@
 
 
 bool SImageDescriptor::isReady()
-{
-    const bool valid_src  = !src.isNull();
+{ 
     const bool valid_comp = !components.empty();
-    const bool valid_map  = segments.isValid();
-    const bool valid_fit  = segments.isCompatible(src);
     const bool valid_fs   = !all_features.empty();
-    if (!valid_src ) qDebug()<<"SImageDescriptor: stop - invalid image";
-    if (!valid_comp) qDebug()<<"SImageDescriptor: stop - no component ";
-    if (!valid_map ) qDebug()<<"SImageDescriptor: stop - SSegmentation map wasn't prepared";
-    if (!valid_fit ) qDebug()<<"SImageDescriptor: stop - SSegmentation map does not fit in size";
+
+    if (!valid_comp) qDebug()<<"SImageDescriptor: stop - no component ";   
     if (!valid_fs  ) qDebug()<<"SImageDescriptor: stop - no features";
-    return valid_src && valid_comp&& valid_map && valid_fit && valid_fs;
+
+    return valid_comp && valid_fs;
 }
 
-bool SImageDescriptor::addComponent(const std::__cxx11::string &name, const SFunctor &component)
+SImageDescriptor::SImageDescriptor(const QImage &img, const SSegmentationMap &seg_map):
+    src(img),segments(seg_map)
+{
+    if (!seg_map.isCompatible(img))
+        throw std::invalid_argument("SImageDescriptor: img and seg_map must be compatible");
+    if (!seg_map.isValid())
+        throw std::invalid_argument("SImageDescriptor: seg_map must be valid");
+    if (img.isNull())
+        throw std::invalid_argument("SImageDescriptor: img must be valid");
+}
+
+bool SImageDescriptor::addComponent(const std::__cxx11::string &name, SFunctor component)
 {
     if (components.find(name)==components.end())
     {
@@ -27,15 +34,6 @@ bool SImageDescriptor::addComponent(const std::__cxx11::string &name, const SFun
     return false;
 }
 
-bool SImageDescriptor::addSegmentationMap(const SSegmentationMap &seg_map)
-{
-    if (seg_map.isCompatible(src) && seg_map.isValid())
-    {
-        segments=SSegmentationMap(seg_map);
-        return true;
-    }
-    return false;
-}
 
 bool SImageDescriptor::addFeatures(SAbstractFeatures *features)
 {

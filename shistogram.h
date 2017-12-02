@@ -21,7 +21,6 @@ public:
     int DX(int av=std::numeric_limits<int>::max());
 
     virtual void rebuild(const SMatrix& src, bool ignore_zero=true);
-
     std::list<std::string> getHeader(const std::string& predicat="");
     std::list<double> getFeatures();
     virtual QImage toImage();

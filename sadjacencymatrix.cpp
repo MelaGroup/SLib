@@ -127,6 +127,14 @@ double SAdjacencyMatrix::averageBrightness() const
     return av;
 }
 
+bool SAdjacencyMatrix::operator==(const SAdjacencyMatrix &other) const
+{
+    for(int i=0;i<256;++i)
+        for(int j=0;j<256;++j)
+            if (matrix[i][j]==other.matrix[i][j]) return false;
+    return true;
+}
+
 void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
 {
     for(int x=0;x<256;++x)
@@ -134,7 +142,7 @@ void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
             matrix[x][y]=0;
 
     elements=img.width()*img.height();
-    calculate(img);    
+    calculate(img);
     if (ignore_zero)
     {
         for(int y=0;y<img.height();++y)for(int x=0;x<img.width();++x)

@@ -20,9 +20,12 @@ void SDataFrame::setHeader(const std::list<std::string> &header_list)
     table.clear();
     _rows=0;
 
-    SRange<int> id;
+    int id=0;
     for (auto col_name:header_list)
-        header[id()]=col_name;
+    {
+        header[id]=col_name;
+        ++id;
+    }
 }
 
 void SDataFrame::newObject(const std::string &name, const std::vector<double> &values)

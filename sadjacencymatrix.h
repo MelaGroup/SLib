@@ -26,6 +26,8 @@ public:
     double inertiaMoment()const;
     double trail()const;
     double averageBrightness()const;
+    bool operator==(const SAdjacencyMatrix& other) const;
+
     virtual void rebuild(const SMatrix& img, bool ignore_zero=true);
     std::list<std::string> getHeader(const std::string& predicat="");
     std::list<double> getFeatures();

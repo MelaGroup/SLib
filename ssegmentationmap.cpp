@@ -22,7 +22,8 @@ QRect SSegment::toRect(){return {x,y,w,h};}
 
 SSegment SSegmentationMap::floodFill(int value, int x, int y)
 {
-    if (!isValidPos(x,y)) throw std::invalid_argument("SSegmentationMap::floodFill - Invalid position");
+    using namespace std;
+    if (!isValidPos(x,y)) throw invalid_argument("SSegmentationMap::floodFill - Invalid position");
 
     int orig=ptr[y][x];
     //if (orig==value) return s;
@@ -35,16 +36,12 @@ SSegment SSegmentationMap::floodFill(int value, int x, int y)
     while(!deque.empty())
     {
         int fx=deque.front().x(),fy=deque.front().y();
-
-        for (int dy=-1;dy<=1;++dy)
-            for (int dx=-1;dx<=1;++dx)
+        vector<QPoint> neigh{{fx+1,fy},{fx,fy+1},{fx-1,fy},{fx,fy-1}};
+        for (QPoint p:neigh)
+            if (isValidPos(p.x(),p.y())&& ptr[p.y()][p.x()]==orig)
             {
-                int nx=fx+dx,ny=fy+dy;
-                if (isValidPos(nx,ny)&& ptr[ny][nx]==orig)
-                {
-                    ptr[ny][nx]=value;
-                    deque.push_back({nx,ny});
-                }
+                ptr[p.y()][p.x()]=value;
+                deque.push_back(p);
             }
         deque.pop_front();
         ++power;
