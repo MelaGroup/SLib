@@ -2,11 +2,14 @@
 #define SSEGMENTATIONMAP_H
 
 #include <random>
+#include <set>
 #include <deque>
+#include <tuple>
+#include <typeinfo>
 #include <algorithm>
 #include <SLib/smatrix.h>
 #include <assert.h>
-#include <typeinfo>
+
 
 
 struct SSegment
@@ -24,10 +27,10 @@ class SSegmentationMap:protected SMatrix
 {
 protected:
     std::map<int,SSegment> segments;
-    std:: default_random_engine& global_urng() const;
+    std::default_random_engine& global_urng() const;
 
-    int pick(int l,int r) const;
-
+    int pick(int l,int r) const;    
+    SSegment floodFill(int value,int x,int y);
 public:
     SSegmentationMap(const SMatrix& src):SMatrix(src){connectedAreas();}
     SSegmentationMap(SMatrix&& src):SMatrix(src){connectedAreas();}
@@ -35,7 +38,7 @@ public:
     SSegmentationMap(int width=0,int height=0):SMatrix(width,height){}
     SSegmentationMap &operator=(const SSegmentationMap &other);
 
-    SSegment floodFill(int value,int x,int y);
+
     void join(int id1,int id2);
     int joinToEnviroment(int id);
     void combine(int power_threshold);
@@ -56,6 +59,7 @@ public:
 
     SSegment& operator[](int id);
     QImage toImage() const;
+    virtual void onImage(QImage& img);
     virtual SMatrix toMatrix() const;
 };
 

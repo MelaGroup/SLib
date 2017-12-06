@@ -32,13 +32,14 @@ public:
         for (int y=0;y<src.height();++y)
             for (int x=0;x<src.width();++x)
                 if (mode == BINARY)
-                    ret(x,y) =  src(x,y)<threshold?0:1;
+                    ret.set(x,y,src(x,y)<threshold?0:1);
                 else if (mode == BINARY_INV )
                     ret(x,y) =  src(x,y)<threshold?1:0;
                 else if (mode == TOZERO)
                     ret(x,y) =  src(x,y)<threshold?0:src(x,y);
                 else if (mode == TOZERO_INV)
                     ret(x,y) =  src(x,y)<threshold?src(x,y):0;
+
         return ret;
     }
 };

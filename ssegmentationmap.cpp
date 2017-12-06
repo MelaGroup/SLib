@@ -18,16 +18,81 @@ void SSegment::operator+=(const SSegment &seg)
 }
 
 QRect SSegment::toRect(){return {x,y,w,h};}
+/*
+SSegment SSegmentationMap::floodLines(int x, int y,int value,int orig)
+{
+    int llim=x,rlim=x;
+    //(at(llim,y,!orig)==orig)
+    while (isValidPos(llim,y) && get(llim,y)==orig) --llim;
+    while (isValidPos(rlim,y) && get(rlim,y)==orig) ++rlim;
+    ++llim;--rlim;
+    for (int nx=llim;nx<=rlim;++nx)
+        ptr[y][nx]=value;
 
-
+    SSegment segment(llim,y,rlim-llim+1,1,rlim-llim+1);
+    if (y-1>=0)
+    {
+        for (int nx = llim;nx<=rlim;++nx)
+            if (ptr[y-1][nx]!=value && ptr[y-1][nx]==orig)
+                segment+=floodLines(nx,y-1,value,orig);
+    }
+    if (y+1<height())
+    {
+        for (int nx = llim;nx<=rlim;++nx)
+            if (ptr[y+1][nx]!=value && ptr[y+1][nx]==orig)
+                segment+=floodLines(nx,y+1,value,orig);
+    }
+    return segment;
+}
+*/
 SSegment SSegmentationMap::floodFill(int value, int x, int y)
 {
     using namespace std;
     if (!isValidPos(x,y)) throw invalid_argument("SSegmentationMap::floodFill - Invalid position");
-
     int orig=ptr[y][x];
-    //if (orig==value) return s;
+    if (orig==value) throw invalid_argument("SSegmentationMap::floodFill - fill and original values must be different");
+    int x1=x,y1=y,x2=x,y2=y;
+    int power=0;
 
+    deque<QPoint> points({QPoint(x,y)});
+    do
+    {
+        QPoint p = points.front();
+        points.pop_front();
+        int fy = p.y(),llim=p.x(),rlim=p.x();
+        while (isValidPos(llim,fy) && ptr[fy][llim]==orig) --llim;
+        while (isValidPos(rlim,fy) && ptr[fy][rlim]==orig) ++rlim;
+        ++llim;--rlim;
+
+        for (int nx=llim;nx<=rlim;++nx)
+            ptr[fy][nx]=value;
+
+        power+=rlim-llim+1;
+        if (llim<x1) x1=llim;
+        if (fy<y1) y1=fy;
+        if (x2<rlim) x2=rlim;
+        if (y2<fy) y2=fy;
+
+        if (fy-1>=0)
+        {
+            if (ptr[fy-1][llim]==orig)
+                points.push_back({llim,fy-1});
+            for (int nx = llim+1;nx<=rlim;++nx)
+                if (ptr[fy-1][nx]==orig && ptr[fy-1][nx-1]!=orig)
+                    points.push_back({nx,fy-1});
+        }
+        if (fy+1<height())
+        {
+            if (ptr[fy+1][llim]==orig)
+                points.push_back({llim,fy+1});
+            for (int nx = llim+1;nx<=rlim;++nx)
+                if (ptr[fy+1][nx]==orig && ptr[fy+1][nx-1]!=orig)
+                    points.push_back({nx,fy+1});
+        }
+    }
+    while(!points.empty());
+    return SSegment(x1,y1,x2-x1+1,y2-y1+1,power);
+    /*
     std::deque<QPoint> deque{{x,y}};
     ptr[y][x]=value;
 
@@ -50,7 +115,8 @@ SSegment SSegmentationMap::floodFill(int value, int x, int y)
         if (x2<fx) x2=fx;
         if (y2<fy) y2=fy;
     }
-    return SSegment(x1,y1,x2-x1+1,y2-y1+1,power);
+
+    return SSegment(x1,y1,x2-x1+1,y2-y1+1,power);*/
 }
 
 std::default_random_engine &SSegmentationMap::global_urng() const
@@ -65,6 +131,8 @@ int SSegmentationMap::pick(int l, int r) const
     using parm_t = decltype(d)::param_type;
     return d(global_urng(),parm_t{l,r});
 }
+
+
 
 SSegmentationMap &SSegmentationMap::operator=(const SSegmentationMap &other)
 {
@@ -209,8 +277,26 @@ QImage SSegmentationMap::toImage() const
                 colors[pix]=QColor(pick(0,255),pick(0,255),pick(0,255));
             img.setPixelColor(x,y,colors.at(pix));
         }
-
     return img;
+}
+
+void SSegmentationMap::onImage(QImage &img)
+{
+    using namespace std;
+    if (!isCompatible(img))
+        throw invalid_argument("SSegmentationMap::onImage - img and segmentation map must be compatible");
+    map<int,QColor> colors;
+
+    for(int y=0;y<_height;++y)
+        for(int x=0;x<_width;++x)
+        {
+            int pix=ptr[y][x];
+            bool isBoardPix =(pix!=get(x+1,y,!pix))||(pix!=get(x-1,y,!pix))||(pix!=get(x,y+1,!pix))||(pix!=get(x,y-1,!pix));
+            if (colors.find(pix)==colors.end())
+                colors[pix]=QColor(pick(0,255),pick(0,255),pick(0,255));
+            if (isBoardPix)
+                img.setPixelColor(x,y,colors.at(pix));
+        }
 }
 
 SMatrix SSegmentationMap::toMatrix() const

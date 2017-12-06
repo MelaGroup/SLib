@@ -44,11 +44,11 @@ void binLaplace(SMatrix &src)
         {
             copy(c,r)=0;
             copy(c,r)-=4*src(c,r);
-            copy(c,r)+=src.at(c+1,r);
-            copy(c,r)+=src.at(c,r+1);
-            copy(c,r)+=src.at(c-1,r);
-            copy(c,r)+=src.at(c,r-1);
-            if(copy(c,r)!=0) copy(c,r)=20;
+            copy(c,r)+=src.get(c+1,r);
+            copy(c,r)+=src.get(c,r+1);
+            copy(c,r)+=src.get(c-1,r);
+            copy(c,r)+=src.get(c,r-1);
+            if(copy(c,r)!=0) copy(c,r)=70;
         }
     src.swap(copy);
 }

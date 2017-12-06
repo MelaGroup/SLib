@@ -143,11 +143,17 @@ int& SMatrix::operator()(int col,int row)
     return ptr[row][col];
 }
 
-int SMatrix::at(int col, int row, const int out_value) const
+int SMatrix::get(int col, int row, const int out_value) const
 {
     if (isValidPos(col,row))
         return ptr[row][col];
     return out_value;
+}
+
+void SMatrix::set(int col, int row, int value)
+{
+    if (isValidPos(col,row))
+        ptr[row][col]=value;
 }
 
 void SMatrix::view(const QRect &rect) const

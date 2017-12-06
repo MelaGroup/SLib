@@ -45,7 +45,9 @@ public:
     int height() const {return _height;}
     int operator()(int col,int row)const;
     int& operator()(int col,int row);
-    int at(int col,int row,const int out_value=0) const;
+    int get(int col,int row,const int out_value=0) const;
+    void set(int col,int row,int value);
+
     void view(const QRect& rect) const;
 
     virtual QImage toImage();
