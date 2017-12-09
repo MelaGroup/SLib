@@ -153,7 +153,12 @@ int SMatrix::get(int col, int row, const int out_value) const
 void SMatrix::set(int col, int row, int value)
 {
     if (isValidPos(col,row))
+    {
         ptr[row][col]=value;
+        if (value<_min) _min=value;
+        if (_max<value) _max=value;
+    }
+
 }
 
 void SMatrix::view(const QRect &rect) const

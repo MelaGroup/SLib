@@ -291,11 +291,16 @@ void SSegmentationMap::onImage(QImage &img)
         for(int x=0;x<_width;++x)
         {
             int pix=ptr[y][x];
-            bool isBoardPix =(pix!=get(x+1,y,!pix))||(pix!=get(x-1,y,!pix))||(pix!=get(x,y+1,!pix))||(pix!=get(x,y-1,!pix));
             if (colors.find(pix)==colors.end())
                 colors[pix]=QColor(pick(0,255),pick(0,255),pick(0,255));
-            if (isBoardPix)
-                img.setPixelColor(x,y,colors.at(pix));
+
+            for (int ny=-3;ny<=3;++ny)
+                for (int nx=-3;nx<=3;++nx)
+                    if (pix!=get(x+nx,y+ny,!pix))
+                    {
+                        img.setPixelColor(x,y,colors.at(pix));
+                        break;
+                    }
         }
 }
 
