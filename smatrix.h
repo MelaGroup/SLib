@@ -3,6 +3,7 @@
 
 #include <QImage>
 #include <QDebug>
+
 #include <SLib/sfunctors.h>
 
 
@@ -32,6 +33,7 @@ public:
     SMatrix& operator=(const SMatrix& other);
     SMatrix& operator+=(int value);
     SMatrix& operator+=(const SMatrix& other);
+    SMatrix& operator-=(const SMatrix& other);
 
     void swap(SMatrix& src);
     bool isValidPos(int col,int row)const;

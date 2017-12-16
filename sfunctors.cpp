@@ -57,3 +57,6 @@ SFunctor S::Saturation()
 
 SFunctor S::Value()
 {return SFunctor([](const QColor& p){return p.value();});}
+
+SFunctor S::Lasy()
+{return SFunctor([](const QColor& p){return (int)(p.rgb());});}

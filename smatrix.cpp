@@ -88,6 +88,18 @@ SMatrix &SMatrix::operator+=(const SMatrix &other)
     for(int r=0;r<_height;++r)
         for(int c=0;c<_width;++c)
             ptr[r][c]+=other.ptr[r][c];
+    ruin_limits();
+    return *this;
+}
+
+SMatrix &SMatrix::operator-=(const SMatrix &other)
+{
+    if(!isCompatible(other))
+        throw std::invalid_argument("SMatrix: sizes must be equal");
+    for(int r=0;r<_height;++r)
+        for(int c=0;c<_width;++c)
+            ptr[r][c]-=other.ptr[r][c];
+    ruin_limits();
     return *this;
 }
 
@@ -228,11 +240,11 @@ QImage SMatrix::toImage()
 {
     QImage diagram(_width,_height,QImage::Format_RGB888);
     refresh_limits();
-    const int mat_min=_min,mat_max=_max;
+    const double mat_min=_min,mat_max=_max;
     auto scaler = [mat_min,mat_max](int x)
     {
         if (mat_max==255 && mat_min==0) return x;
-        return 255*(x-mat_min)/(mat_max-mat_min);
+        return int(255.*(double(x)-mat_min)/(mat_max-mat_min));
     };
 
     for(int y=0;y<_height;++y)

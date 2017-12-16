@@ -58,6 +58,7 @@ public:
 
 
     SSegment& operator[](int id);
+    SSegment operator[](int id) const;
     QImage toImage() const;
     virtual void onImage(QImage& img);
     virtual SMatrix toMatrix() const;

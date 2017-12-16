@@ -10,23 +10,22 @@
 class SAdjacencyMatrix:public SAbstractFeatures
 {
 private:
-    int matrix[256][256];
+    std::map<int,std::map<int,int>> matrix;
     int radius;
     int elements=0;
     inline void calculate(const SMatrix &img);
     inline void ignoreZero(); //можно оптимизировать
-    inline void checkMatrix();
 public:
     SAdjacencyMatrix(int radius=1);
     SAdjacencyMatrix(const SMatrix &img,int radius=1,bool ignore_zero=true);
-    double energy() const;
-    double entropy()const;
-    double localHomogenity()const;
-    double maxProbability()const;
-    double inertiaMoment()const;
-    double trail()const;
-    double averageBrightness()const;
-    bool operator==(const SAdjacencyMatrix& other) const;
+    double energy();
+    double entropy();
+    double localHomogenity();
+    double maxProbability();
+    double inertiaMoment();
+    double trail();
+    double averageBrightness();
+    bool operator==(const SAdjacencyMatrix& other)const;
 
     virtual void rebuild(const SMatrix& img, bool ignore_zero=true);
     std::list<std::string> getHeader(const std::string& predicat="");

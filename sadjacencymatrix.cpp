@@ -8,119 +8,142 @@ inline void SAdjacencyMatrix::calculate(const SMatrix &img)
             int center=img(x,y);
             for(int i=-radius;i<=radius;++i)for(int j=-radius;j<=radius;++j)
             {
-                int xn=x+i,yn=y+j;
-                if (0<xn && xn<img.width() && 0<yn && yn<img.height()&& i!=0 && j!=0 )
+                int xn=x+i,yn=y+j;                
+                if (img.isValidPos(xn,yn))
                 {
                     int neighbor=img(xn,yn);
                     ++matrix[center][neighbor];
-                }
+                }                
             }
-            //--matrix[center][center];//Заменить условия на более быстрые варианты
+            --matrix[center][center];
         }
 }
 
 void SAdjacencyMatrix::ignoreZero()
 {
-    for(int i=0;i<256;++i)
+    for( auto& m: matrix)
     {
-        matrix[0][i]=0;
-        matrix[i][0]=0;
+        matrix[0][m.first]=0;
+        matrix[m.first][0]=0;
     }
 }
 
 
-void SAdjacencyMatrix::checkMatrix()
-{
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
-            assert(matrix[x][y]>=0);
-}
-
 SAdjacencyMatrix::SAdjacencyMatrix(int radius):radius(radius)
-{
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
-            matrix[x][y]=0;
-}
+{}
 
 SAdjacencyMatrix::SAdjacencyMatrix(const SMatrix&img, int radius, bool ignore_zero):radius(radius)
-{    
-    rebuild(img,ignore_zero);
-}
+{rebuild(img,ignore_zero);}
 
-double SAdjacencyMatrix::energy() const
+double SAdjacencyMatrix::energy()
 {
+    using namespace std;
     double energy=0;
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
+    for(auto& r: matrix)
+    {
+        int y=r.first;
+        for(auto& c: matrix)
+        {
+            int x=c.first;
             energy+=(matrix[x][y]*matrix[x][y]);
+        }
+    }
     energy/=double(elements);
     assert(energy>=0);
     return energy;
 }
 
-double SAdjacencyMatrix::entropy() const
+double SAdjacencyMatrix::entropy()
 {
     double entropy=0;
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
+    for(auto& r: matrix)
+    {
+        int y=r.first;
+        for(auto& c: matrix)
         {
+            int x=c.first;
             int N=matrix[x][y];
             if (0<N) entropy+=N*log(N);
         }
+    }
     entropy/=double(elements);
     return entropy;
 }
 
-double SAdjacencyMatrix::localHomogenity() const
+double SAdjacencyMatrix::localHomogenity()
 {
     double homogenity=0;
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
+    for(auto& r: matrix)
+    {
+        int y=r.first;
+        for(auto& c: matrix)
+        {
+            int x=c.first;
             homogenity+=matrix[x][y]/(1+(x-y)*(x-y));
+        }
+    }
     homogenity/=double(elements);
     return homogenity;
 }
 
-double SAdjacencyMatrix::maxProbability() const
+double SAdjacencyMatrix::maxProbability()
 {
     double max_p=0;
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
-            if (max_p<matrix[x][y]) max_p=matrix[x][y];
+    for(auto& r: matrix)
+    {
+        int y=r.first;
+        for(auto& c: matrix)
+        {
+            int x=c.first;
+            if (max_p<matrix[x][y]) max_p=matrix.at(x).at(y);
+        }
+    }
     max_p/=double(elements);
     return max_p;
 }
 
-double SAdjacencyMatrix::inertiaMoment() const
+double SAdjacencyMatrix::inertiaMoment()
 {
     double iner=0;
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
+    for(auto& r: matrix)
+    {
+        int y=r.first;
+        for(auto& c: matrix)
+        {
+            int x=c.first;
             iner+=(x-y)*(x-y)*matrix[x][y];
+        }
+    }
     iner/=double(elements);
     return iner;
 }
 
-double SAdjacencyMatrix::trail() const
+double SAdjacencyMatrix::trail()
 {
     double tr=0;
-    for(int i=0;i<256;++i)
+    for(auto& r: matrix)
+    {
+        int i=r.first;
         tr+=matrix[i][i];
+    }
     tr/=double(elements);
     assert(tr>=0);
     return tr;
 }
 
-double SAdjacencyMatrix::averageBrightness() const
+double SAdjacencyMatrix::averageBrightness()
 {
     double av=0,buffer;
-    for(int x=0;x<256;++x)
+    for(auto& r: matrix)
     {
+        int y=r.first;
         buffer=0;
-        for(int y=0;y<256;++y)
+        for(auto& c: matrix)
+        {
+            int x=c.first;
             buffer+=matrix[x][y];
-        av+=x*buffer;
+        }
+        av+=y*buffer;
     }
     av/=double(elements);
     assert(av>=0);
@@ -129,18 +152,11 @@ double SAdjacencyMatrix::averageBrightness() const
 
 bool SAdjacencyMatrix::operator==(const SAdjacencyMatrix &other) const
 {
-    for(int i=0;i<256;++i)
-        for(int j=0;j<256;++j)
-            if (matrix[i][j]==other.matrix[i][j]) return false;
-    return true;
+    return (matrix==other.matrix);
 }
 
 void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
 {
-    for(int x=0;x<256;++x)
-        for(int y=0;y<256;++y)
-            matrix[x][y]=0;
-
     elements=img.width()*img.height();
     calculate(img);
     if (ignore_zero)
@@ -151,7 +167,6 @@ void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
         assert(elements>=0);
         ignoreZero();
     }
-    checkMatrix();
 }
 
 std::list<std::__cxx11::string> SAdjacencyMatrix::getHeader(const std::string& predicat)

@@ -18,6 +18,9 @@ class SDataFrame
 
 public:
     SDataFrame(){}
+    SDataFrame(const SDataFrame& other);
+    SDataFrame(SDataFrame&& other);
+    SDataFrame(const QString& path);
     int cols() const {return int(header.size());}
     int rows() const {return _rows;}
 
@@ -27,9 +30,19 @@ public:
 
     SDataFrame& operator+=(const SDataFrame& other);
     SDataFrame& vstack(const SDataFrame& other);
+    SDataFrame& operator=(const SDataFrame& other);
+    SDataFrame& operator=(SDataFrame&& other);
+
+    const std::vector<double> &row(int r) const;
+
+    std::vector<double> col(int c) const;
+
+    SDataFrame& scale();
 
     void removeObject(int row);
+    void removeColumn(int col);
     virtual bool toCSV(const QString& path);
+
 };
 
 /*Шаблоны не компилируются, на другом компиляторе норм

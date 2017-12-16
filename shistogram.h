@@ -14,11 +14,11 @@ class SHistogram:public SAbstractFeatures
 public:
     SHistogram(){}
     SHistogram(const SMatrix& src, bool ignore_zero=true);
-    inline int min() const {return min_key;}
-    inline int max() const {return max_key;}
-    inline int span() const {return max_key - min_key;}
-    int MX();
-    int DX(int av=std::numeric_limits<int>::max());
+    inline double min() const {return min_key;}
+    inline double max() const {return max_key;}
+    inline double span() const {return max_key - min_key;}
+    double MX();
+    double SD(double av=std::numeric_limits<double>::max());
 
     virtual void rebuild(const SMatrix& src, bool ignore_zero=true);
     std::list<std::string> getHeader(const std::string& predicat="");

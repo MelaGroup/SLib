@@ -24,6 +24,7 @@ namespace S
     SFunctor Hue();
     SFunctor Saturation();
     SFunctor Value();
+    SFunctor Lasy();
 }
 
 #endif // SFUNCTORS_H

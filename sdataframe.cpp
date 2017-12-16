@@ -14,6 +14,16 @@ table.newObject(*it++,MMarks);
 table.removeObject(1);
 table.toCSV("C://test.csv");*/
 
+SDataFrame::SDataFrame(const SDataFrame &other)
+{
+    this->operator =(other);
+}
+
+SDataFrame::SDataFrame(SDataFrame &&other)
+{
+    this->operator =(other);
+}
+
 void SDataFrame::setHeader(const std::list<std::string> &header_list)
 {
     header.clear();
@@ -82,9 +92,68 @@ SDataFrame &SDataFrame::vstack(const SDataFrame &other)
     return *this;
 }
 
+SDataFrame& SDataFrame::operator=(SDataFrame &&other)
+{
+    std::swap(_rows,other._rows);
+    std::swap(header,other.header);
+    std::swap(names,other.names);
+    std::swap(table,other.table);
+    return *this;
+}
+
+SDataFrame &SDataFrame::operator=(const SDataFrame &other)
+{
+    _rows=other._rows;
+    header=other.header;
+    names=other.names;
+    table=other.table;
+    return *this;
+}
+
+const std::vector<double> &SDataFrame::row(int r) const
+{
+    if (-1>r || r>=_rows)
+        throw std::invalid_argument("SDataFrame: there is no such row");
+    return table[r];
+}
+
+
+std::vector<double> SDataFrame::col(int c) const
+{
+    std::vector<double> col(_rows);
+    if (-1<c || c<cols())
+        for (int r=0;r<_rows;++r)
+            col[r]=table[r][c];
+    else
+        throw std::invalid_argument("SDataFrame: there is no such row");
+    return col;
+}
+
+SDataFrame &SDataFrame::scale()
+{
+    for(size_t c=0;c<header.size();++c)
+    {
+        double MX=0;
+        for (int r=0;r<_rows;++r)
+            MX+=table[r][c];
+        MX/=double(_rows);
+
+        double DX=0;
+        for (int r=0;r<_rows;++r)
+            DX+=(table[r][c]-MX)*(table[r][c]-MX);
+        DX/=double(_rows);
+
+        for (int r=0;r<_rows;++r)
+            table[r][c] = (table[r][c]-MX)/sqrt(DX);
+    }
+    return *this;
+}
+
+
+
 void SDataFrame::removeObject(int row)
 {
-    if (row<_rows)
+    if (-1<row || row<_rows)
     {
         while (row<_rows-1)
         {
@@ -101,6 +170,29 @@ void SDataFrame::removeObject(int row)
 
 }
 
+void SDataFrame::removeColumn(int col)
+{
+    int _cols=int(header.size());
+    if (-1<col && col<_cols)
+    {
+        for(int c=col;c<_cols-1;++c)
+        {
+            std::swap(header[c],header[c+1]);
+            for(int row=0;row<_rows;++row)
+                std::swap(table[row][c],table[row][c+1]);
+        }
+
+
+        header.erase(_cols-1);
+        for(int row=0;row<_rows;++row)
+            table[row].pop_back();
+
+    }
+    else
+        qDebug()<<"SDataFrame: there is no such col";
+
+}
+
 bool SDataFrame::toCSV(const QString &path)
 {
     QFile csv(path);
@@ -108,23 +200,49 @@ bool SDataFrame::toCSV(const QString &path)
         return false;
 
     QTextStream out(&csv);
-    out<<"Names;";
+    out<<"Names";
     for(size_t i=0;i<header.size();++i)
     {
-        out<<QString::fromStdString(header[i])<<";";
+        out<<";"<<QString::fromStdString(header[i]);
     }
     out<<"\n";
     for(size_t r=0;r<size_t(_rows);++r)
     {
-        out<<QString::fromStdString(names[r])<<";";
+        out<<QString::fromStdString(names[r]);
         for(size_t c=0;c<header.size();++c)
         {
-            out<<table[r][c]<<";";
+            out<<";"<<table[r][c];
         }
         out<<"\n";
     }
     csv.close();
     return true;
+}
+
+SDataFrame::SDataFrame(const QString &path)
+{
+    QFile csv(path);
+    csv.open(QIODevice::ReadOnly | QIODevice::Text);
+
+    QTextStream in(&csv);
+    QStringList rude_header = in.readLine().split(';');
+    std::list<std::string> clear_header;
+    for (QString s:rude_header)
+        clear_header.push_back(s.toStdString());
+    clear_header.pop_front();
+    setHeader(clear_header);
+
+    while(!in.atEnd())
+    {
+        QStringList row = in.readLine().split(';');
+        std::string name = row.takeFirst().toStdString();
+        std::list<double> values;
+        for (QString s:row)
+            values.push_back(s.toDouble());
+        newObject(name,values);
+    }
+
+    csv.close();
 }
 
 

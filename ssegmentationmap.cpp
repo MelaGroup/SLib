@@ -145,6 +145,10 @@ SSegment &SSegmentationMap::operator[](int id)
 {
     return segments.at(id);
 }
+SSegment SSegmentationMap::operator[](int id) const
+{
+    return segments.at(id);
+}
 
 void SSegmentationMap::join(int id1, int id2)
 {
@@ -212,6 +216,8 @@ SMatrix SSegmentationMap::getSegment(const SMatrix &original, int id) const
                 ret(x,y)=0;
     return ret;
 }
+
+
 
 void SSegmentationMap::combine(int power_threshold)
 {

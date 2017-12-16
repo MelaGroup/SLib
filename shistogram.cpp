@@ -15,7 +15,7 @@ SHistogram::SHistogram(const SMatrix &src, bool ignore_zero)
     rebuild(src,ignore_zero);
 }
 
-int SHistogram::MX()
+double SHistogram::MX()
 {
     double av=0;
     for(int i=min_key;i<=max_key;++i)
@@ -24,7 +24,7 @@ int SHistogram::MX()
     return av;
 }
 
-int SHistogram::DX(int av)
+double SHistogram::SD(double av)
 {
     if (av==std::numeric_limits<int>::max())
         av=MX();
@@ -32,7 +32,7 @@ int SHistogram::DX(int av)
     for(int i=min_key;i<=max_key;++i)
         dv+=double(bars[i]*(i-av)*(i-av));
     dv/=double(sum);
-    return dv;
+    return sqrt(dv);
 }
 
 void SHistogram::rebuild(const SMatrix &src, bool ignore_zero)
@@ -58,7 +58,7 @@ std::list<std::__cxx11::string> SHistogram::getHeader(const std::string& predica
     header.push_back(predicat+"MAX");
     header.push_back(predicat+"SPAN");
     header.push_back(predicat+"MX");
-    header.push_back(predicat+"DX");
+    header.push_back(predicat+"SD");
     return header;
 }
 
@@ -68,9 +68,9 @@ std::list<double> SHistogram::getFeatures()
     features.push_back(min());
     features.push_back(max());
     features.push_back(span());
-    int average = MX();
+    double average = MX();
     features.push_back(average);
-    features.push_back(DX(average));
+    features.push_back(SD(average));
     return features;
 }
 
