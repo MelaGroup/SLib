@@ -1,10 +1,10 @@
-#ifndef SQUAREMASK_H
-#define SQUAREMASK_H
+#ifndef SSQUAREMASK_H
+#define SSQUAREMASK_H
 
 #include <SLib/Processing/sprocessing.h>
-#include <SLib/smatrix.h>
+#include <SLib/Core/smatrix.h>
 
-class SquareMask : public SProcessing
+class SSquareMask : public SProcessing
 {
 private:
     int side = 0;
@@ -15,9 +15,9 @@ private:
     int **mask_r = nullptr;
     int **mask_l = nullptr;
 public:
-    SquareMask(int a, std::vector<int> profile);
+    SSquareMask(int a, std::vector<int> profile);//!переписать через initialaizer_list
     SMatrix bypass(const SMatrix& src);
-    ~SquareMask();
+    ~SSquareMask();
 };
 
-#endif // SQUAREMASK_H
+#endif // SSQUAREMASK_H

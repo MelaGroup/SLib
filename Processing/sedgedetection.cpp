@@ -1,6 +1,6 @@
-#include "edgedetection.h"
+#include "sedgedetection.h"
 
-SMatrix SobelOperator::bypass(SMatrix &src)
+SMatrix SSobelOperator::bypass(SMatrix &src)
 {
     int xn, yn, gx, gy;
     SMatrix ret(src.width(),src.height());
@@ -20,7 +20,7 @@ SMatrix SobelOperator::bypass(SMatrix &src)
     return ret;
 }
 
-SMatrix PrewittOperator::bypass(SMatrix &src)
+SMatrix SPrewittOperator::bypass(SMatrix &src)
 {
     int xn, yn, gx, gy;
     SMatrix ret(src.width(),src.height());
@@ -40,7 +40,7 @@ SMatrix PrewittOperator::bypass(SMatrix &src)
     return ret;
 }
 
-SMatrix RobertsOperator::bypass(SMatrix &src)
+SMatrix SRobertsOperator::bypass(SMatrix &src)
 {
     int xn, yn, gx, gy;
     SMatrix ret(src.width(),src.height());

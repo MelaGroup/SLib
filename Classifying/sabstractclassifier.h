@@ -1,7 +1,7 @@
 #ifndef SABSTRACTCLASSIFIER_H
 #define SABSTRACTCLASSIFIER_H
 
-#include <SLib/sdataframe.h>
+#include <SLib/Core/sdataframe.h>
 
 class SAbstractClassifier
 {

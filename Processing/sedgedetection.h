@@ -1,10 +1,10 @@
-#ifndef EDGEDETECTION_H
-#define EDGEDETECTION_H
+#ifndef SEDGEDETECTION_H
+#define SEDGEDETECTION_H
 
-#include "SLib/smatrix.h"
+#include "SLib/Core/smatrix.h"
 #include "SLib/Processing/sprocessing.h"
 
-class SobelOperator : public SProcessing
+class SSobelOperator : public SProcessing
 {
 private:
     int Gx[3][3] = { {1,0,-1},
@@ -14,11 +14,11 @@ private:
                      {0,0,0},
                      {-1,-2,-1} };
 public:
-    SobelOperator(){}
+    SSobelOperator(){}
     SMatrix bypass(SMatrix &src);
 };
 
-class PrewittOperator : public SProcessing
+class SPrewittOperator : public SProcessing
 {
 private:
     int Gx[3][3] = { {-1,0,1},
@@ -28,11 +28,11 @@ private:
                      {0,0,0},
                      {1,1,1} };
 public:
-    PrewittOperator(){}
+    SPrewittOperator(){}
     SMatrix bypass(SMatrix &src);
 };
 
-class RobertsOperator : public SProcessing
+class SRobertsOperator : public SProcessing
 {
 private:
     int Gx[2][2] = { {1,0},
@@ -40,7 +40,7 @@ private:
     int Gy[2][2] = { {0,1},
                      {-1,0} };
 public:
-    RobertsOperator(){}
+    SRobertsOperator(){}
     SMatrix bypass(SMatrix &src);
 };
 

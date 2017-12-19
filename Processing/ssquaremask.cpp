@@ -1,6 +1,6 @@
-#include "squaremask.h"
+#include "ssquaremask.h"
 
-SquareMask::SquareMask(int a, std::vector<int> profile):side(a)
+SSquareMask::SSquareMask(int a, std::vector<int> profile):side(a)
 {
     mask_v = new int* [side];
     for (int i=0;i<side;++i)
@@ -14,7 +14,8 @@ SquareMask::SquareMask(int a, std::vector<int> profile):side(a)
     mask_l = new int* [side];
     for (int i=0;i<side;++i)
         mask_l[i] = new int [side];
-    if (profile.size() == side)
+
+    if (profile.size() == size_t(side))
     {
         for (int i=0;i<side;++i) for (int j=0;j<side;++j)
             mask_v[i][j] = profile.at(i);
@@ -23,7 +24,7 @@ SquareMask::SquareMask(int a, std::vector<int> profile):side(a)
             mask_h[i][j] = profile.at(j);
 
         std::rotate(profile.rbegin(), profile.rbegin()+radius, profile.rend());
-        for (int i=0;i<rows;++i)
+        for (int i=0;i<side;++i)
         {
             for (int j=0;j<side;++j)
                 mask_r[i][j] = profile.at(j);
@@ -50,7 +51,7 @@ SquareMask::SquareMask(int a, std::vector<int> profile):side(a)
     }
 }
 
-SMatrix SquareMask::bypass(const SMatrix &src)
+SMatrix SSquareMask::bypass(const SMatrix &src)
 {
     int v,h,r,l;
     SMatrix ret(src);
@@ -72,7 +73,7 @@ SMatrix SquareMask::bypass(const SMatrix &src)
     return ret;
 }
 
-SquareMask::~SquareMask()
+SSquareMask::~SSquareMask()
 {
     for (int i=0;i<side;++i)
     {

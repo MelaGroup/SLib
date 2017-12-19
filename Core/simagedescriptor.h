@@ -2,9 +2,9 @@
 #define SIMAGEDESCRIPTOR_H
 
 #include <typeinfo>
-#include <SLib/ssegmentationmap.h>
-#include <SLib/sabstractfeatures.h>
-#include <SLib/sdataframe.h>
+#include <SLib/Core/ssegmentationmap.h>
+#include <SLib/Features/sabstractfeatures.h>
+#include <SLib/Core/sdataframe.h>
 
 class SImageDescriptor
 {

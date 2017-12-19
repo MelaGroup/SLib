@@ -1,7 +1,7 @@
 #ifndef STEACHER_H
 #define STEACHER_H
-#include <SLib/smatrix.h>
-#include <SLib/sabstractfeatures.h>
+#include <SLib/Core/smatrix.h>
+#include <SLib/Features/sabstractfeatures.h>
 class STeacher: public SAbstractFeatures
 {
     std::map<int,int> marks;

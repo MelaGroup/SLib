@@ -1,11 +1,11 @@
-#include "bilateralfilter.h"
+#include "sbilateralfilter.h"
 
-BilateralFilter::BilateralFilter(double sd, double si):sigmaD(sd),sigmaI(si)
+SBilateralFilter::SBilateralFilter(double sd, double si):sigmaD(sd),sigmaI(si)
 {
 
 }
 
-SMatrix BilateralFilter::bypass(const SMatrix &src)
+SMatrix SBilateralFilter::bypass(const SMatrix &src)
 {
     SMatrix ret(src.width(), src.height());
     for (int x=1;x<src.width()-1;++x)

@@ -2,7 +2,7 @@
 #define SPROCESSING_H
 #include <deque>
 #include <vector>
-#include <SLib/smatrix.h>
+#include <SLib/Core/smatrix.h>
 
 class SProcessing
 {

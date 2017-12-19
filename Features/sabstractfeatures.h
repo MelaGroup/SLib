@@ -3,7 +3,7 @@
 
 #include <map>
 #include <list>
-#include <SLib/smatrix.h>
+#include <SLib/Core/smatrix.h>
 
 class SAbstractFeatures
 {

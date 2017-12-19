@@ -1,17 +1,17 @@
-#ifndef BILATERALFILTER_H
-#define BILATERALFILTER_H
+#ifndef SBILATERALFILTER_H
+#define SBILATERALFILTER_H
 
 #include <cmath>
 #include <SLib/Processing/sprocessing.h>
-#include <SLib/smatrix.h>
+#include <SLib/Core/smatrix.h>
 
-class BilateralFilter : public SProcessing
+class SBilateralFilter : public SProcessing
 {
 private:
     double sigmaD;
     double sigmaI;
 public:
-    BilateralFilter(double sd, double si);
+    SBilateralFilter(double sd, double si);
     SMatrix bypass (const SMatrix &src);
 };
 

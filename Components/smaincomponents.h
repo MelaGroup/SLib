@@ -2,8 +2,8 @@
 #define SMAINCOMPONENTS_H
 
 #include <QImage>
-#include <SLib/sfunctors.h>
-#include <SLib/slinearalgebra.h>
+#include <SLib/Components/sfunctors.h>
+#include <SLib/Components/slinearalgebra.h>
 
 class SMainComponents
 {

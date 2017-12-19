@@ -1,7 +1,7 @@
 #ifndef SHISTOGRAM_H
 #define SHISTOGRAM_H
-#include <Slib/sabstractfeatures.h>
-#include <SLib/smatrix.h>
+#include <Slib/Features/sabstractfeatures.h>
+#include <SLib/Core/smatrix.h>
 #include <limits>
 
 class SHistogram:public SAbstractFeatures
