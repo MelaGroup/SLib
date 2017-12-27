@@ -51,21 +51,25 @@ SDataFrame SImageDescriptor::run(const std::__cxx11::string &img_predicat)
     SDataFrame X;
     if (isReady())
     {
-        qDebug()<<".block start:"+QString::fromStdString(img_predicat);
-        vector<int> ids=segments.IDs();
+        //emit status(".start:"+QString::fromStdString(img_predicat));
+        qApp->processEvents();
+        vector<int> ids=segments.IDs();       
         for (const pair<string,SFunctor>& c:components)
         {
-            qDebug()<<".."+QString::fromStdString(c.first);
+            //emit status(".."+QString::fromStdString(c.first));
+            qApp->processEvents();
             SMatrix plane(src,c.second);
             for (SAbstractFeatures* f:all_features)
             {                
-                qDebug()<<"..."<<typeid(*f).name();
+                //emit status("..."+QString::fromStdString(typeid(*f).name()));
+                qApp->processEvents();
                 SDataFrame block;
                 auto header=f->getHeader(c.first+"_");
                 block.setHeader(header);
                 for (int id:ids)
                 {
-                    qDebug()<<"...."<<id;
+                    //emit status("...."+id);
+                    qApp->processEvents();
                     SMatrix segment = segments.getSegment(plane,id);
                     f->rebuild(segment,true);
                     block.newObject(img_predicat+to_string(id),f->getFeatures());
@@ -73,9 +77,8 @@ SDataFrame SImageDescriptor::run(const std::__cxx11::string &img_predicat)
                 X+=block;
             }
         }
-        qDebug()<<".block end:"+QString::fromStdString(img_predicat);
-    }
-    qDebug()<<"complite";
+        //emit status(".end:"+QString::fromStdString(img_predicat));
+    }   
     return X;
 }
 
