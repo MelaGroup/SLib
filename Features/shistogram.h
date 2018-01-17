@@ -3,7 +3,18 @@
 #include <Slib/Features/sabstractfeatures.h>
 #include <SLib/Core/smatrix.h>
 #include <limits>
-
+/*!
+ * \ingroup Features
+ * \brief Класс гистограммы яркостей.
+ * \details Служит для расчета гистограммных признаков по полутоновому изображению.
+ * Минимальная и максимальная яркость не ограничены [0;256).
+ * С помощью класса можно вычислить 5 признаков:
+ *  - MIN(минимальная яркость),
+ *  - MAX(максимальная яркость),
+ *  - SPAN(размах по яркости),
+ *  - MX(средняя яркость)
+ *  - SD(СКО)
+ */
 class SHistogram:public SAbstractFeatures
 {   
     std::map<int,int> bars;
@@ -12,11 +23,11 @@ class SHistogram:public SAbstractFeatures
 
     inline void ignoreZero();
 public:
-    SHistogram(){}
+    SHistogram();
     SHistogram(const SMatrix& src, bool ignore_zero=true);
-    inline double min() const {return min_key;}
-    inline double max() const {return max_key;}
-    inline double span() const {return max_key - min_key;}
+    double min() const;
+    double max() const;
+    double span() const;
     double MX();
     double SD(double av=std::numeric_limits<double>::max());
 

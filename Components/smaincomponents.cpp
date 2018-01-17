@@ -1,5 +1,9 @@
 #include "smaincomponents.h"
-
+/*!
+ * \brief Конструктор по цветному изображению.
+ * \details Внутри, осуществляется вычисление ковариационной матрицы, собственных значений и собственных векторов.
+ * \param src - Цветное изображение
+ */
 SMainComponents::SMainComponents(const QImage &src)
 {
     SMatrix_3x3 cov_mat(0);
@@ -44,28 +48,63 @@ SMainComponents::SMainComponents(const QImage &src)
     eigenvectors = cov_mat.eigenvectors(eigenvalues);
 }
 
+/*!
+ * \brief Собственные значения ковариационной матрицы.
+ * \details Собственные значения представляются в виде координат 3D-вектора. Собственные значения в векторе расположены в порядке убывания.
+ * \return собственные значения ковариационной матрицы
+ */
 SVector_3D SMainComponents::Eigenvalues() const {return eigenvalues;}
 
+/*!
+ * \brief Собственные вектора ковариационной матрицы.
+ * \details Главные значения представляются в виде столбцов матрицы 3 на 3.
+ * Главные вектора в матрице расположены в порядке убывания их собственных значений.
+ * Длины векторов нормированы на 1.
+ * \return собственные вектора ковариационной матрицы
+ */
 SMatrix_3x3 SMainComponents::Eigenvectors() const {return eigenvectors;}
 
+/*!
+ * \brief Функтор выделения по первой главной компоненте.
+ * \details Согласно методу главных компонент является самой информативной среди всех возможных линейных комбинаций по RGB.
+ * Формула преобразования: значение проекции на первый собственный вектор (с max собственным значением) p = ({RED; GREEN; BLUE};first_eigenvector)
+ * \return Правило преобразования пикселей
+ */
 SFunctor SMainComponents::first() const
 {
     SVector_3D vec = eigenvectors.col(1);
     return {vec.x,vec.y,vec.z};
 }
 
+/*!
+ * \brief Функтор выделения по второй главной компоненте.
+ * \details Согласно методу главных компонент является самой информативной среди всех компонент, ортогональных первой.
+ * Формула преобразования: значение проекции на второй собственный вектор p = ({RED; GREEN; BLUE};second_eigenvector)
+ * \return Правило преобразования пикселей
+ */
 SFunctor SMainComponents::second() const
 {
     SVector_3D vec = eigenvectors.col(2);
     return {vec.x,vec.y,vec.z};
 }
 
+/*!
+ * \brief Функтор выделения по третьей главной компоненте.
+ * \details Самая неинформативная из главных компонент. Она ортогональна первой и второй.
+ * Формула преобразования: значение проекции на третий собственный вектор p = ({RED; GREEN; BLUE};third_eigenvector)
+ * \return Правило преобразования пикселей
+ */
 SFunctor SMainComponents::third() const
 {
     SVector_3D vec = eigenvectors.col(3);
     return {vec.x,vec.y,vec.z};
 }
 
+/*!
+ * \brief Оператор сравнения.
+ * \param other - объект для сравнения
+ * \return true, при равенстве собственных значений и векторов
+ */
 bool SMainComponents::operator==(const SMainComponents &other)
 {
     return (eigenvalues==other.eigenvalues) && (eigenvectors==other.eigenvectors);

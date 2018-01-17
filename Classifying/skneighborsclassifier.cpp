@@ -1,5 +1,11 @@
 #include "skneighborsclassifier.h"
-
+/*!
+ * \ingroup Classifying
+ * \brief Метрика Евклида.
+ * \details Стандартная метрика в евклидовой геометрии.
+ * Расстояние между точками A и B есть среднее квадратическое проекций вектора AB.
+ * \return Класс метрики, в последствии используемой классификатором.
+ */
 SMetric S::euclidean()
 {
     using namespace std;
@@ -17,7 +23,12 @@ SMetric S::euclidean()
     };
     return SMetric(ret,"euclidean");
 }
-
+/*!
+ * \ingroup Classifying
+ * \brief Метрика Манхэттена.
+ * \details Расстояние между точками A и B есть сумма модулей проекций вектора AB.
+ * \return Класс метрики, в последствии используемой классификатором.
+ */
 SMetric S::manhattan()
 {
     using namespace std;
@@ -34,7 +45,12 @@ SMetric S::manhattan()
     };
     return SMetric(ret,"manhattan");
 }
-
+/*!
+ * \ingroup Classifying
+ * \brief Метрика Чебышева.
+ * \details Расстояние между точками A и B есть максимальное значение из модулей проекций вектора AB.
+ * \return Класс метрики, в последствии используемой классификатором.
+ */
 SMetric S::chebyshev()
 {
     using namespace std;
@@ -53,6 +69,13 @@ SMetric S::chebyshev()
     return SMetric(ret,"chebyshev");
 }
 
+/*!
+ * \brief Конструктор классификатора
+ * \param n_neighbors - число соседей (по умолчанию 5)
+ * \param metric - используемая метрика (по умолчанию - Евклида)
+ * \warning Отказы от классификации (например: на четном k) никак не контролируются.
+ * \throw std::invalid_argument - при неположительном k
+ */
 SKNeighborsClassifier::SKNeighborsClassifier(int n_neighbors, SMetric metric)
     :n_neighbors(n_neighbors),metric(metric)
 {
@@ -60,13 +83,25 @@ SKNeighborsClassifier::SKNeighborsClassifier(int n_neighbors, SMetric metric)
         throw std::invalid_argument("SKNeighborsClassifier: the number of neighbours must be greater than 0");
 }
 
+/*!
+ * \brief Производит обучение классификатора по прецедентам.
+ * \param X - таблица "Объекты-Признаки"
+ * \param Y - соответствующий столбец ответов
+ * \warning Следите за сохранением порядка и соответствия между строками X и метками классов в Y.
+ * \throw std::invalid_argument - если число строк в X и Y не совпадает
+ */
 void SKNeighborsClassifier::fit(const SDataFrame &X, const std::vector<int> &Y)
 {
     if (X.rows()!=int(Y.size()))
         throw std::invalid_argument("SKNeighborsClassifier: table objects-attributes and a vector of responses not compatible");
     table=X,answers=Y;
 }
-
+/*!
+ * \brief Производит классификацию объектов.
+ * \param X - таблица "Объекты-Признаки"
+ * \warning Отказы от классификации (например: на четном k) никак не контролируются.
+ * \return Столбец предсказаний (№ строки в X соответствует № элемента)
+ */
 std::vector<int> SKNeighborsClassifier::predict(const SDataFrame &X)
 {
     using namespace std;

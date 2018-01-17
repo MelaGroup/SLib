@@ -1,6 +1,9 @@
 #include "sadjacencymatrix.h"
-
-
+/*!
+ * \brief Вычисление МПС для изображения.
+ * \details Учитывает краевые пиксели изображения.
+ * \param img - полутоновое изображение
+ */
 inline void SAdjacencyMatrix::calculate(const SMatrix &img)
 {    
     for(int y=0;y<img.height();++y)for(int x=0;x<img.width();++x)
@@ -19,6 +22,10 @@ inline void SAdjacencyMatrix::calculate(const SMatrix &img)
         }
 }
 
+/*!
+ * \brief Игнорирование черного фона.
+ * \details Зануляет 0 строку и стобец матрицы смежности.
+ */
 void SAdjacencyMatrix::ignoreZero()
 {
     for( auto& m: matrix)
@@ -28,13 +35,31 @@ void SAdjacencyMatrix::ignoreZero()
     }
 }
 
-
+/*!
+ * \brief Конструктор по радиусу смежности.
+ * \details Устнавливает радиус смежности, который нельзя впоследствии изменить.
+ * \param radius - радиус смежности
+ * \warning Отсутствует контроль redius<1.
+ */
 SAdjacencyMatrix::SAdjacencyMatrix(int radius):radius(radius)
 {}
 
+/*!
+ * \brief Конструктор по изображению.
+ * \details Строит МПС с указанным радиусом смежности и флагом фона для полутонового изображения.
+ * \param img - полутоновое изображение.
+ * \param radius - радиус смежности
+ * \param ignore_zero - игнорирование черного фона
+ * \warning Отсутствует контроль redius<1 и валидности img.
+ */
 SAdjacencyMatrix::SAdjacencyMatrix(const SMatrix&img, int radius, bool ignore_zero):radius(radius)
 {rebuild(img,ignore_zero);}
 
+/*!
+ * \brief Вычисление Энергии.
+ * \details Энергия = отношение суммы квадратов элементов матрицы к числу пикселей.
+ * \return энергия
+ */
 double SAdjacencyMatrix::energy()
 {
     using namespace std;
@@ -53,6 +78,11 @@ double SAdjacencyMatrix::energy()
     return energy;
 }
 
+/*!
+ * \brief Вычисление Энтропии.
+ * \details Энтропия равна сумме (N*log(N) если (0<N), иначе 0), нормированной на число пикселей, где N - элемент матрицы смежности.
+ * \return энтропия
+ */
 double SAdjacencyMatrix::entropy()
 {
     double entropy=0;
@@ -70,6 +100,11 @@ double SAdjacencyMatrix::entropy()
     return entropy;
 }
 
+/*!
+ * \brief Вычисление Локальной однородности.
+ * \details Локальная однородность равна сумме (элемент_матрицы[x][y]/(1+(x-y)^2), нормированной на число пикселей.
+ * \return локальная однородность
+ */
 double SAdjacencyMatrix::localHomogenity()
 {
     double homogenity=0;
@@ -86,6 +121,11 @@ double SAdjacencyMatrix::localHomogenity()
     return homogenity;
 }
 
+/*!
+ * \brief Вычисление Максимальной вероятности.
+ * \details Максимальная вероятность равна максимальному из значений ячеек матрицы смежности, нормированному на число пикселей.
+ * \return максимальная вероятность
+ */
 double SAdjacencyMatrix::maxProbability()
 {
     double max_p=0;
@@ -102,6 +142,11 @@ double SAdjacencyMatrix::maxProbability()
     return max_p;
 }
 
+/*!
+ * \brief Вычисление Момента инерции.
+ * \details Момент инерции равен сумме (элемент_матрицы[x][y]*(x-y)^2), нормированной на число пикселей.
+ * \return момент инерции
+ */
 double SAdjacencyMatrix::inertiaMoment()
 {
     double iner=0;
@@ -118,6 +163,11 @@ double SAdjacencyMatrix::inertiaMoment()
     return iner;
 }
 
+/*!
+ * \brief Вычисление Следа МПС.
+ * \details След МПС равен сумме диагональных элементов, нормированной на число пикселей.
+ * \return след МПС
+ */
 double SAdjacencyMatrix::trail()
 {
     double tr=0;
@@ -131,6 +181,11 @@ double SAdjacencyMatrix::trail()
     return tr;
 }
 
+/*!
+ * \brief Вычисление Средней яркости.
+ * \details Средняя яркость равна сумме по y (y * сумма по х(matrix[x][y])), нормированной на число пикселей.
+ * \return средняя яркость
+ */
 double SAdjacencyMatrix::averageBrightness()
 {
     double av=0,buffer;
@@ -150,11 +205,25 @@ double SAdjacencyMatrix::averageBrightness()
     return av;
 }
 
+
+/*!
+ * \brief Оператор сравнения.
+ * \details Две матрицы считаются равными если соответствующие элементы матрицы МПС равны между собой.
+ * \param other - сравниваемая МПС
+ * \return true - если равны
+ */
 bool SAdjacencyMatrix::operator==(const SAdjacencyMatrix &other) const
 {
     return (matrix==other.matrix);
 }
 
+/*!
+ * \brief Перевычисляет МПС.
+ * \details Осуществляет перевычисление матрицы смежности по указанному полутоновому изображению и значению флага фона.
+ * Не меняет значение радиуса смежности.
+ * \param img - полутоновое изображение
+ * \param ignore_zero - игнорирование черного фона
+ */
 void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
 {
     elements=img.width()*img.height();
@@ -169,11 +238,19 @@ void SAdjacencyMatrix::rebuild(const SMatrix &img, bool ignore_zero)
     }
 }
 
-std::list<std::__cxx11::string> SAdjacencyMatrix::getHeader(const std::string& predicat)
+/*!
+ * \brief Создание листа с названиями признаков.
+ * \details К названиям признаков можно добавлять некоторую приставку.
+ * Итоговое название признака будет складываться из приставки и оригинального названия.
+ * Например "Blue_1_Energy" - Энергия по МПС с шагом(радиусом)=1 по синему каналу. "Blue" в данном примере является приставкой.
+ * \param prefix - приставка
+ * \return лист с названиями признаков
+ */
+std::list<std::__cxx11::string> SAdjacencyMatrix::getHeader(const std::string& prefix)
 {
     using namespace std;
     list<string> header;
-    string str=predicat+to_string(radius);
+    string str=prefix+to_string(radius);
     header.push_back(str+"_Energy");
     header.push_back(str+"_ENT");
     header.push_back(str+"_LUN");
@@ -184,6 +261,11 @@ std::list<std::__cxx11::string> SAdjacencyMatrix::getHeader(const std::string& p
     return header;
 }
 
+/*!
+ * \brief Создание листа со значениями признаков.
+ * \details Признаки распологаются в том же порядке, что и в getHeader.
+ * \return лист со значениями признаков
+ */
 std::list<double> SAdjacencyMatrix::getFeatures()
 {
     std::list<double> features;

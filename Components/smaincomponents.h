@@ -4,7 +4,21 @@
 #include <QImage>
 #include <SLib/Components/sfunctors.h>
 #include <SLib/Components/slinearalgebra.h>
-
+/*!
+ * \ingroup Components
+ * \brief Класс, служащий для перехода из пространства RGB в пространство собственных векторов методом главных компонент (PCA).
+ * \details Данный переход осуществляется следующим образом:
+ * 1. Составляется ковариационная матрица для пикселей по координатам RGB.
+ * 2. Для данной матрицы вычисляются собственные значения и собственные вектора.
+ * 3. Осуществляется переход из RGB в пространство собственных векторов.
+ *
+ * Пример использования:
+ * \code
+ * QImage image(path);
+   SMainComponents mc(image);
+   SMatrix main_plane(image,mc.first());
+ * \endcode
+ */
 class SMainComponents
 {
     SVector_3D eigenvalues;

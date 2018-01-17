@@ -4,6 +4,12 @@
 #include <Slib/Classifying/sabstractclassifier.h>
 
 using DistFunc=std::function<double(const std::vector<double>&,const std::vector<double>&)>;
+/*!
+ * \ingroup Classifying
+ * \brief Класс метрики в признаковом пространстве.
+ * \details Класс, по сути, является обобщенным указателем на функцию,
+ * поэтому может содержать любое осмысленное правило вычисления расстояний между двумя точками признакового пространства.
+ */
 class SMetric
 {
     std::string name;
@@ -21,7 +27,11 @@ namespace S
     SMetric manhattan();
     SMetric chebyshev();
 }
-//#####################################################
+/*!
+ * \ingroup Classifying
+ * \brief Класс классификатора,на основе метода k ближайших соседей.
+ * \details Суть метода подробно описана на http://www.machinelearning.ru/wiki/index.php?title=KNN
+ */
 class SKNeighborsClassifier:public SAbstractClassifier
 {
     int n_neighbors;

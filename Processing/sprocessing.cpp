@@ -1,8 +1,24 @@
 #include "sprocessing.h"
 
-
-
-
+/*!
+ * \ingroup Processing
+ * \brief Заливка одноцветной области.
+ * \details Данная функция заливает одноцветную область цветом value, начиная с точки (x,y), на изображении src.
+ * Реализованн алгоритм медленной заливки через очередь:
+ * - выяснение оригинального цвета и его проверка на не равенство value.
+ * - занесение начального пикселя в очередь и его окрашивание.
+ * - Далее цикл:
+ *  * извлекается пиксель из очереди.
+ *  * его соседи оригинального цвета заносятся в очередь.
+ *  * текущий пиксель окрашивается.
+ * - До тех пор, пока очередь не станет пустой.
+ * \param src - полутоновое изображение.
+ * \param value - новый цвет области
+ * \param x - x координата пикселя изображения
+ * \param y - y координата пикселя изображения
+ * \return число залитых пикселей
+ * \todo вынести функцию в класс
+ */
 int floodFill(SMatrix &src, int value, int x, int y)
 {
     if (src.isValidPos(x,y))
@@ -36,19 +52,3 @@ int floodFill(SMatrix &src, int value, int x, int y)
 }
 
 
-void binLaplace(SMatrix &src)
-{
-    SMatrix copy(src.width(),src.height());
-    for(int r=0;r<src.height();++r)
-        for(int c=0;c<src.width();++c)
-        {
-            copy(c,r)=0;
-            copy(c,r)-=4*src(c,r);
-            copy(c,r)+=src.get(c+1,r);
-            copy(c,r)+=src.get(c,r+1);
-            copy(c,r)+=src.get(c-1,r);
-            copy(c,r)+=src.get(c,r-1);
-            if(copy(c,r)!=0) copy(c,r)=70;
-        }
-    src.swap(copy);
-}

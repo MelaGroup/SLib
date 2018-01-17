@@ -1,10 +1,22 @@
 #include "sbilateralfilter.h"
 
-SBilateralFilter::SBilateralFilter(double sd, double si):sigmaD(sd),sigmaI(si)
-{
+/*!
+ * \brief Конструктор по параметрам функции Гаусса.
+ * \details Конструктор имеет 2 параметра - пространственный разброс sd и яркостной разброс si.
+ * Чем больше разброс по признаку, тем слабее его вклад.
+ * \param sd - пространственный разброс
+ * \param si - яркостной разброс
+ */
+SBilateralFilter::SBilateralFilter(double sd, double si):sigmaD(sd),sigmaI(si){}
 
-}
 
+/*!
+ * \brief Обход изображения.
+ * \details Осуществляет обход изображения билатеральным фильтром по указанному изображению с заданными параметрами пространственного и яркостного разброса.
+ * Обращаем внимание что обработка не затрагивает граничные пиксели.
+ * \param src - полутоновое изображение
+ * \return обработанную копию изображения
+ */
 SMatrix SBilateralFilter::bypass(const SMatrix &src)
 {
     SMatrix ret(src.width(), src.height());

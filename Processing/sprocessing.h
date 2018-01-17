@@ -4,18 +4,26 @@
 #include <vector>
 #include <SLib/Core/smatrix.h>
 
+/*!
+ * \ingroup Processing
+ * \brief Абстрактная обработка.
+ * \details Абстрактный базовый класс для всех классов предобработки.
+ * Обеспечивает единоообразие по методу обхода изображений bypass.
+ */
 class SProcessing
 {
 public:
+    ///\brief Пустой конструктор
     SProcessing(){}
+    /*!
+     * \brief Обход изображения.
+     * \return SMatrix(0,0)
+     */
     virtual SMatrix bypass(const SMatrix&){return SMatrix(0,0);}
+    ///\brief Пустой деструктор
     virtual ~SProcessing(){}
 };
 
-
-// Надо сделать из функций наследников
 int floodFill(SMatrix& src,int value,int x,int y);
-void binLaplace(SMatrix& src);
-
 
 #endif // SPROCESSING_H

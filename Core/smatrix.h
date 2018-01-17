@@ -6,20 +6,26 @@
 
 #include <SLib/Components/sfunctors.h>
 
-
+/*!
+ * \ingroup Core
+ * \brief Класс полутонового изображения.
+ * \details По сути является двумерной динамической матрицей из int. Содержимое ячеек - любые числа, входящие в int.
+ * Обычно генерируется по некоторому цветному изображению(QImage) и указанному правилу преобразования к полутоновому(SFunctor)
+ */
 class SMatrix
 {
 protected:
-
-    int _height,_width;
-    int** ptr=nullptr;
-    int _min=1;
-    int _max=0;
+    int _height;        //!< Высота изображения
+    int _width;         //!< Ширина изображения
+    int** ptr=nullptr;  //!< Указатель на двумерный динамический массив
+    int _min=1;         //!< Минимальное значение по элементам ptr
+    int _max=0;         //!< Максимальное значение по элементам ptr
 
     inline void seize(int cols,int rows);
     inline void release();
     inline void memcopy(const SMatrix& src);
     inline void refresh_limits();
+    ///\brief Потеря актуальности пределов min и max.
     inline void ruin_limits(){_min=1;_max=0;}
 
 public:
@@ -43,8 +49,8 @@ public:
 
     int min();
     int max();
-    int width() const {return _width;}
-    int height() const {return _height;}
+    int width() const;
+    int height() const;
     int operator()(int col,int row)const;
     int& operator()(int col,int row);
     int get(int col,int row,const int out_value=0) const;
